@@ -12,7 +12,7 @@ UltraSonicController::UltraSonicGetReading(uint16_t *ULTRASONIC_Get /*out*/)
   digitalWrite(TRIG_PIN, LOW);
   delayMicroseconds(2);
   digitalWrite(TRIG_PIN, HIGH);
-  delayMicroseconds(100);
+  delayMicroseconds(500);
   digitalWrite(TRIG_PIN, LOW);
   tempda_x = ((unsigned int)pulseIn(ECHO_PIN, HIGH) / 58);
   *ULTRASONIC_Get = tempda_x;

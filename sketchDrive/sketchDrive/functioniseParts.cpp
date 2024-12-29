@@ -63,19 +63,28 @@ static void ControlBot(DirectionControl direction, uint8_t _speed)
   }
 }
 
-static boolean biggerORSmaller(uint8_t value, uint8_t smallest, uint8_t biggest) //f(x)
+static boolean biggerORSmaller(uint8_t value, uint8_t biggest) //f(x)
 {
-  if (smallest <= value && value <= biggest)
+  if (0 <= value && value <= biggest)
     return true;
   else
     return false;
 }
 
-static int16_t ReturnSonicDistance() {
+static int16_t ReturnSonicDistance(uint8_t threshold) {
     uint16_t distance = 0;
     ultraSonicController.UltraSonicGetReading(&distance);
     //Serial.print("Here is distance: ");
     //Serial.println(distance);
+    if(biggerORSmaller(distance, threshold))
+    {
+      Serial.print("warning your now past this threshold: ");
+      Serial.println(threshold);
+      Serial.print("distance being: ");
+      Serial.println(distance);
+  
+    }
+
     return distance;
 }
 
