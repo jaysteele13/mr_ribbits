@@ -44,5 +44,6 @@ void test_all_controls()
 void loop() {
   // put your main code here, to run repeatedly:
   test_all_controls();
+  delay(50);
   ReturnSonicDistance(20);
 }

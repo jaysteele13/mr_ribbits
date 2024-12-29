@@ -10,9 +10,9 @@ UltraSonicController::UltraSonicGetReading(uint16_t *ULTRASONIC_Get /*out*/)
   // get every 10 milliseconds?
   unsigned int tempda_x = 0;
   digitalWrite(TRIG_PIN, LOW);
-  delayMicroseconds(2);
+  delayMicroseconds(2000);
   digitalWrite(TRIG_PIN, HIGH);
-  delayMicroseconds(500);
+  delayMicroseconds(5000);
   digitalWrite(TRIG_PIN, LOW);
   tempda_x = ((unsigned int)pulseIn(ECHO_PIN, HIGH) / 58);
   *ULTRASONIC_Get = tempda_x;
