@@ -22,3 +22,21 @@ LedController::SetAndEnableRGB(CRGB colour, uint16_t Duration, uint8_t Traversal
     delay(Duration);
   }
 }
+
+LedController::LedBlink(uint16_t Duration, uint8_t Blink_Count)
+{
+    for (int i = 0; i < Blink_Count; i++)
+    {
+        // Turn LEDs ON (keep the current color)
+        FastLED.show();
+        delay(Duration);
+
+        // Turn LEDs OFF
+        fill_solid(leds, NUM_LEDS, CRGB::Black);
+        FastLED.show();
+        delay(Duration);
+
+        // Restore previous color (stored in the LED array)
+        FastLED.show();
+    }
+}

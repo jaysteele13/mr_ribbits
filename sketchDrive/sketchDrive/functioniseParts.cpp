@@ -1,6 +1,6 @@
 #include "driveMotor.h"
-
-
+#include "UltraSonicController.h"
+#include "LedController.h"
 
 enum DirectionControl
 {
@@ -22,6 +22,8 @@ struct Application
 
 //extern Application application
 extern MotorDriver motorDriver;
+extern UltraSonicController ultraSonicController;
+extern LedController ledController;
 
 static void ControlBot(DirectionControl direction, uint8_t _speed) 
 {
@@ -61,5 +63,34 @@ static void ControlBot(DirectionControl direction, uint8_t _speed)
     default:
       break;
   }
-
 }
+
+static boolean biggerORSmaller(uint8_t value, uint8_t biggest) //f(x)
+{
+  if (0 <= value && value <= biggest)
+    return true;
+  else
+    return false;
+}
+
+static int16_t ReturnSonicDistance(uint8_t threshold) {
+    uint16_t distance = 0;
+    ultraSonicController.UltraSonicGetReading(&distance);
+    
+    // if bot is too close to soemthing
+    if(biggerORSmaller(distance, threshold))
+    {
+      // force led blink
+      ledController.LedBlink();
+
+      // log closeness
+      Serial.print("warning your now past this threshold: ");
+      Serial.println(threshold);
+      Serial.print("distance being: ");
+      Serial.println(distance);
+  
+    }
+
+    return distance;
+}
+
