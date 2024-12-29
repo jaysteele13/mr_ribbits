@@ -2,18 +2,22 @@
 #include "driveMotor.h"
 #include "SwitchController.h"
 #include "LedController.h"
+#include "UltraSonicController.h"
 #include "functioniseParts.cpp"
 
 MotorDriver moterDriver;
 SwitchController switchController;
 LedController ledController;
+UltraSonicController ultraSonicController;
 Application application;
 //extern Application application
 
 void setup() {
+  Serial.begin(9600);
   motorDriver.MotorDriverInit();
   switchController.SwitchControllerInit();
   ledController.LedControllerInit();
+  ultraSonicController.UltraSonicControllerInit();
 }
 
 void test_all_controls() 
@@ -40,4 +44,5 @@ void test_all_controls()
 void loop() {
   // put your main code here, to run repeatedly:
   test_all_controls();
+  ReturnSonicDistance();
 }

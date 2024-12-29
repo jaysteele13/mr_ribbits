@@ -1,6 +1,5 @@
 #include "driveMotor.h"
-
-
+#include "UltraSonicController.h"
 
 enum DirectionControl
 {
@@ -22,6 +21,7 @@ struct Application
 
 //extern Application application
 extern MotorDriver motorDriver;
+extern UltraSonicController ultraSonicController;
 
 static void ControlBot(DirectionControl direction, uint8_t _speed) 
 {
@@ -61,5 +61,21 @@ static void ControlBot(DirectionControl direction, uint8_t _speed)
     default:
       break;
   }
-
 }
+
+static boolean biggerORSmaller(uint8_t value, uint8_t smallest, uint8_t biggest) //f(x)
+{
+  if (smallest <= value && value <= biggest)
+    return true;
+  else
+    return false;
+}
+
+static int16_t ReturnSonicDistance() {
+    uint16_t distance = 0;
+    ultraSonicController.UltraSonicGetReading(&distance);
+    //Serial.print("Here is distance: ");
+    //Serial.println(distance);
+    return distance;
+}
+
