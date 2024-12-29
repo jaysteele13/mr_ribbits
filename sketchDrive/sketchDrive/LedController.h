@@ -8,8 +8,8 @@
 class LedController 
 {
   public:
-    LedControllerInit(uint8_t set_Brightness = 50);
-    SetAndEnableRGB(uint16_t Duration = 100, uint8_t Traversal_Number = 2, CRGB colour = CRGB::Red);
+    LedControllerInit(uint8_t set_Brightness = 30);
+    SetAndEnableRGB(CRGB colour = CRGB::Red, uint16_t Duration = 100, uint8_t Traversal_Number = 2);
   private:
     #define PIN_RBGLED 4
     #define NUM_LEDS 1

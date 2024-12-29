@@ -7,6 +7,7 @@
 MotorDriver moterDriver;
 SwitchController switchController;
 LedController ledController;
+Application application;
 //extern Application application
 
 void setup() {
@@ -15,21 +16,18 @@ void setup() {
   ledController.LedControllerInit();
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void test_all_controls() 
+{
   if(!switchController.isSwitchActive()) 
   {
     // Do directions
     delay(50);
-    ControlBot(DirectionControl::Forward, 100);
-    delay(2000);
-    ControlBot(DirectionControl::Forward, 100);
-    ControlBot(DirectionControl::Backward, 200);
-    delay(1000);
-    ControlBot(DirectionControl::LeftBackward, 100);
-    delay(4000);
-    ControlBot(DirectionControl::stop_it, 0);
-    delay(2000);
+    ledController.SetAndEnableRGB(CRGB::DarkGreen);
+    for (application.directionControl = 0; application.directionControl < 9; application.directionControl = application.directionControl + 1)
+    {
+      delay(1000);
+      ControlBot(application.directionControl /*direction*/, 100 /*speed*/);
+    }
   } 
   else 
   {
@@ -37,10 +35,9 @@ void loop() {
     ledController.SetAndEnableRGB();
     ControlBot(DirectionControl::stop_it, 0);
   }
-  
-  // if button is pressed start driving sequence wait 5 seconds after done flashing led light when waiting
+}
 
-  // start with start when button is pressed
-
-
+void loop() {
+  // put your main code here, to run repeatedly:
+  test_all_controls();
 }

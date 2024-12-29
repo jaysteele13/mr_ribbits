@@ -9,7 +9,7 @@ LedController::LedControllerInit(uint8_t set_Brightness) {
 }
 
 
-LedController::SetAndEnableRGB(uint16_t Duration, uint8_t Traversal_Number, CRGB colour)
+LedController::SetAndEnableRGB(CRGB colour, uint16_t Duration, uint8_t Traversal_Number)
 {
   if (NUM_LEDS < Traversal_Number)
   {
