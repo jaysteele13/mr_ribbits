@@ -2,7 +2,6 @@
 #include "UltraSonicController.h"
 #include "LedController.h"
 #include "MiniServoController.h"
-#include "BuzzerController.h"
 
 enum DirectionControl
 {
@@ -27,7 +26,6 @@ extern MotorDriver motorDriver;
 extern UltraSonicController ultraSonicController;
 extern LedController ledController;
 extern MiniServoController miniServoController;
-extern BuzzerController buzzerController;
 
 static void ControlBot(DirectionControl direction, uint8_t _speed) 
 {
