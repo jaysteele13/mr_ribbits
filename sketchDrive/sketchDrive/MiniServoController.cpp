@@ -1,19 +1,40 @@
 #include "MiniServoController.h"
 #include <Arduino.h>
-/*Servo*/
 
-Servo myservo; // create servo object to control a servo
 MiniServoController::MiniServoControllerInit()
 {
   myservo.attach(PIN_Servo_z, 500, 2400); //500: 0 degree  2400: 180 degree
   myservo.write(90); //sets the servo position according to the 90（middle）
-  delay(500);
+  delay(200);
 }
 
 MiniServoController::SetAngle(uint8_t Position_angle)
 {
-  myservo.attach(PIN_Servo_z, 500, 2400);
-  myservo.write(Position_angle);
-  delay(450);
-  myservo.detach();
+  if (Position_angle != currentAngle) 
+  {
+    targetAngle = Position_angle;
+    myservo.attach(PIN_Servo_z, 500, 2400);  // Attach the servo with specified min/max pulse width
+    myservo.write(targetAngle);              // Move to the target position
+    previousMillis = millis();              // Reset the timer
+    isMoving = true;                         // Mark the servo as moving
+  }
+  else 
+  {
+    myservo.detach();
+  }
+}
+
+MiniServoController::Update() 
+{
+  // If the servo is moving, check if the move is completed
+  if (isMoving) {
+      unsigned long currentMillis = millis();  // Get the current time
+
+      // Check if enough time has passed for the servo to complete its move
+      if (currentMillis - previousMillis >= moveDuration) {
+          myservo.detach();  // Detach the servo after moving
+          currentAngle = targetAngle;  // Update the current angle
+          isMoving = false;   // Mark the servo as no longer moving
+      }
+  }
 }

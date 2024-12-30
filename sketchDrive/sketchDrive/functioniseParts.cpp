@@ -3,17 +3,6 @@
 #include "LedController.h"
 #include "MiniServoController.h"
 
-// temp vars
-static unsigned long previousLedTime = 0;  // Store last LED toggle time
-static unsigned long previousServoTime = 0; // Store last servo move time
-
-static const unsigned long ledInterval = 500;  // Interval for LED blink (ms)
-static const unsigned long servoInterval = 200; // Interval for servo move (ms)
-
-static bool ledState = false;             // Track LED state
-static int servoPosition = 65;            // Current servo position
-static bool servoDirection = true;        // Direction of servo movement
-
 enum DirectionControl
 {
   Forward,
@@ -86,65 +75,41 @@ static boolean biggerORSmaller(uint8_t value, uint8_t biggest) //f(x)
     return false;
 }
 
-// temp handle asynchronous
-static void handleLedBlink() {
-  unsigned long currentTime = millis();
-  if (currentTime - previousLedTime >= ledInterval) {
-    // Toggle LED state
-    ledState = !ledState;
-    digitalWrite(4, ledState);
-    previousLedTime = currentTime; // Update the last blink time
-  }
-}
-
-static void handleServoShake() {
-  unsigned long currentTime = millis();
-  if (currentTime - previousServoTime >= servoInterval) {
-    // Move servo between 65 and 115 degrees
-    if (servoDirection) {
-      servoPosition += 10;
-      if (servoPosition >= 115) {
-        servoDirection = false; // Change direction
-      }
-    } else {
-      servoPosition -= 10;
-      if (servoPosition <= 65) {
-        servoDirection = true; // Change direction
-      }
-    }
-    miniServoController.SetAngle(servoDirection);
-    previousServoTime = currentTime; // Update the last servo move time
-  }
-}
 
 static int16_t ReturnSonicDistance(uint8_t threshold) {
     uint16_t distance = 0;
     ultraSonicController.UltraSonicGetReading(&distance);
     
+    
     // if bot is too close to soemthing
     if(biggerORSmaller(distance, threshold))
     {
+      
       // force led blink
-      // ledController.LedBlink();
-      handleLedBlink();
+      ledController.LedBlink();
 
       // log closeness
-      Serial.print("warning your now past this threshold: ");
-      Serial.println(threshold);
-      Serial.print("distance being: ");
-      Serial.println(distance);
+      // Serial.print("warning your now past this threshold: ");
+      // Serial.println(threshold);
+      // Serial.print("distance being: ");
+      // Serial.println(distance);
 
       // shake robot head
-      handleServoShake();
-      // miniServoController.SetAngle(65);
-      // delay(100);
-      // miniServoController.SetAngle(115);
+      miniServoController.SetAngle(65);
+      delay(100);
+      miniServoController.SetAngle(115);
+      delay(100);
   
+    }
+    else
+    {
+      miniServoController.SetAngle(90);
     }
 
     // reset orrientation
     delay(100);
-    miniServoController.SetAngle(90);
+    
+    miniServoController.Update();
 
     return distance;
 }
