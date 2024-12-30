@@ -28,11 +28,12 @@ void test_all_controls()
   {
     // Do directions
     delay(50);
-    ReturnSonicDistance(20);
+    
     ledController.SetAndEnableRGB(CRGB::DarkGreen);
     for (application.directionControl = 0; application.directionControl < 9; application.directionControl = application.directionControl + 1)
     {
       delay(1000);
+      ReturnSonicDistance(20);
       ControlBot(application.directionControl /*direction*/, 100 /*speed*/);
     }
   } 
@@ -41,12 +42,17 @@ void test_all_controls()
     // turn led light on have motors deactivated
     ledController.SetAndEnableRGB();
     ControlBot(DirectionControl::stop_it, 0);
+
+
   }
 }
+//awful async
+unsigned long testControlsPreviousMillis = 0;   // Store the last time test_all_controls() was called
+unsigned long sonicDistancePreviousMillis = 0;   // Store the last time ReturnSonicDistance() was called
+const unsigned long testControlsInterval = 1000; // Interval for test_all_controls()
+const unsigned long sonicDistanceInterval = 200; // Interval for sonic distance check
 
 void loop() {
-  // put your main code here, to run repeatedly:
   test_all_controls();
-  delay(50);
   ReturnSonicDistance(20);
 }
