@@ -4,6 +4,7 @@
 #include "LedController.h"
 #include "UltraSonicController.h"
 #include "functioniseParts.cpp"
+#include "BuzzerController.h"
 
 MotorDriver moterDriver;
 SwitchController switchController;
@@ -11,11 +12,13 @@ LedController ledController;
 UltraSonicController ultraSonicController;
 MiniServoController miniServoController;
 Application application;
+BuzzerController buzzerController;
 //extern Application application
 
 void setup() {
   Serial.begin(9600);
   motorDriver.MotorDriverInit();
+  buzzerController.BuzzerControllerInit();
   switchController.SwitchControllerInit();
   ledController.LedControllerInit();
   ultraSonicController.UltraSonicControllerInit();
@@ -36,6 +39,7 @@ void test_all_controls()
       ReturnSonicDistance(20);
       ControlBot(application.directionControl /*direction*/, 100 /*speed*/);
     }
+    buzzerController.PlayTheme();
   } 
   else 
   {
@@ -46,11 +50,6 @@ void test_all_controls()
 
   }
 }
-//awful async
-unsigned long testControlsPreviousMillis = 0;   // Store the last time test_all_controls() was called
-unsigned long sonicDistancePreviousMillis = 0;   // Store the last time ReturnSonicDistance() was called
-const unsigned long testControlsInterval = 1000; // Interval for test_all_controls()
-const unsigned long sonicDistanceInterval = 200; // Interval for sonic distance check
 
 void loop() {
   test_all_controls();
