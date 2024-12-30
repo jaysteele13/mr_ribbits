@@ -12,6 +12,7 @@ class MotorDriver {
     #endif
       void MotorDriverControl(boolean direction_A, uint8_t speed_A, // right hand side
       boolean direction_B, uint8_t speed_B, boolean enableServo = true);
+      void Stop(void);
     
   private:
     #define PIN_Motor_PWMA 5

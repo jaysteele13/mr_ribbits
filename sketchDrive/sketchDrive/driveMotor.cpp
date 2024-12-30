@@ -74,3 +74,8 @@ void MotorDriver::MotorDriverControl(boolean direction_A, uint8_t speed_A, boole
     }
 
   }
+
+  void MotorDriver::Stop()
+  {
+    digitalWrite(PIN_Motor_STBY, LOW);
+  }
