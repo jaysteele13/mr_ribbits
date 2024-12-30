@@ -9,6 +9,7 @@ MotorDriver moterDriver;
 SwitchController switchController;
 LedController ledController;
 UltraSonicController ultraSonicController;
+MiniServoController miniServoController;
 Application application;
 //extern Application application
 
@@ -18,6 +19,7 @@ void setup() {
   switchController.SwitchControllerInit();
   ledController.LedControllerInit();
   ultraSonicController.UltraSonicControllerInit();
+  miniServoController.MiniServoControllerInit();
 }
 
 void test_all_controls() 
@@ -26,6 +28,7 @@ void test_all_controls()
   {
     // Do directions
     delay(50);
+    ReturnSonicDistance(20);
     ledController.SetAndEnableRGB(CRGB::DarkGreen);
     for (application.directionControl = 0; application.directionControl < 9; application.directionControl = application.directionControl + 1)
     {
