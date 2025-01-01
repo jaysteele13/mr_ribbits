@@ -22,15 +22,17 @@ class AutoPilot
     Roam(int duration);
     Stop(void);
     boolean isActive;
-    void MoveForward();
-    bool DetectObstacle();
+    ScanSonicDistance(uint8_t threshold);
+    DetectObstacle(uint8_t threshold);
     bool DetectEdge();
     void TiltHead();
     void SoundBuzzer();
   private:
     RobotState state;
     EdgeDetectionController::Sensor sensorProxy;
+    int sonic_distance;
   public:
+  
     MotorDriver motorDriver;
     BuzzerController buzzerController;
     UltraSonicController ultraSonicController;
