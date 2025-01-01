@@ -12,6 +12,7 @@
 - Scan for edges, push it out and test more with stopping thats not int the controoler
 - the controllers job is to return data, this should be parsed elsewhere in functionalise parts where everything is
 - get motor to work in tandem with other controllers
+- get other sound theme in here 
 */
 
 MotorDriver moterDriver;
@@ -62,7 +63,7 @@ void test_all_controls()
       delay(1000);
       ReturnSonicDistance(20);
       ControlBot(application.directionControl /*direction*/, 100 /*speed*/);
-      edgeDetectionController.ScanForEdges();
+    //   edgeDetectionController.ScanForEdges();
     }
     
   }  
@@ -77,5 +78,5 @@ void test_all_controls()
 void loop() {
   test_all_controls();
   ReturnSonicDistance(20);
-  edgeDetectionController.ScanForEdges();
+//  edgeDetectionController.ScanForEdges();
 }

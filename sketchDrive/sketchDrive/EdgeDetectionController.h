@@ -10,8 +10,9 @@
 class EdgeDetectionController 
 {
   public:
+    enum class Sensor {Left, Middle, Right, None};
     Init(void);
-    ScanForEdges(void);
+    Sensor ScanForEdges();
   private:
     reverseRobotBasedOnSensor(int leftValue, int middleValue, int rightValue);
     #define LEFT_SENSOR_PIN A0  // Pin for the left sensor

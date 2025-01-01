@@ -8,7 +8,8 @@ class BuzzerController
 {
   public:
     BuzzerControllerInit(void);
-    PlayTheme(void);
+    PlayTheLick(void);
+    PlayTetris(void);
   private:
     #define PIN_OUT 11
   
