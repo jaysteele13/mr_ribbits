@@ -61,7 +61,7 @@ void test_all_controls()
     for (application.directionControl = 0; application.directionControl < 9; application.directionControl = application.directionControl + 1)
     {
       delay(1000);
-      ReturnSonicDistance(20);
+      // ReturnSonicDistance(20);
       ControlBot(application.directionControl /*direction*/, 100 /*speed*/);
     //   edgeDetectionController.ScanForEdges();
     }
@@ -77,6 +77,6 @@ void test_all_controls()
 
 void loop() {
   test_all_controls();
-  ReturnSonicDistance(20);
+  // ReturnSonicDistance(20);
 //  edgeDetectionController.ScanForEdges();
 }

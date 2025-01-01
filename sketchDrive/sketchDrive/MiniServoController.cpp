@@ -24,6 +24,11 @@ MiniServoController::SetAngle(uint8_t Position_angle)
   }
 }
 
+MiniServoController::GetAngle()
+{
+  return myservo.read();
+}
+
 MiniServoController::Update() 
 {
   // If the servo is moving, check if the move is completed

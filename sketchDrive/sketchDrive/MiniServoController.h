@@ -8,6 +8,7 @@ class MiniServoController
 public:
   MiniServoControllerInit(void);
   SetAngle(uint8_t Position_angle);
+  int GetAngle();
   Update(void);
 
 private:
