@@ -18,7 +18,7 @@ class EdgeDetectionController
     #define LEFT_SENSOR_PIN A0  // Pin for the left sensor
     #define MIDDLE_SENSOR_PIN A1  // Pin for the middle sensor
     #define RIGHT_SENSOR_PIN A2  // Pin for the right
-    #define THRESHOLD 400  // Threshold for edge detection (adjust based on testing)
+    #define THRESHOLD 500  // Threshold for edge detection (adjust based on testing)
   
   public:
     MotorDriver motorDriver;

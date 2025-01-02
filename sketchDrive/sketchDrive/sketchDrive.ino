@@ -6,6 +6,7 @@
 #include "functioniseParts.cpp"
 #include "BuzzerController.h"
 #include "EdgeDetectionController.h"
+#include "Autopilot.h"
 
 // to clean up
 /*
@@ -23,10 +24,13 @@ MiniServoController miniServoController;
 Application application;
 BuzzerController buzzerController;
 EdgeDetectionController edgeDetectionController;
+AutoPilot autoPilot;
+bool enableAuto = true;
 //extern Application application
 
 void setup() {
   Serial.begin(9600);
+  autoPilot.SetAutoPilot(true);
   edgeDetectionController.Init();
   motorDriver.MotorDriverInit();
   buzzerController.BuzzerControllerInit();
@@ -61,7 +65,7 @@ void test_all_controls()
     for (application.directionControl = 0; application.directionControl < 9; application.directionControl = application.directionControl + 1)
     {
       delay(1000);
-      ReturnSonicDistance(20);
+      // ReturnSonicDistance(20);
       ControlBot(application.directionControl /*direction*/, 100 /*speed*/);
     //   edgeDetectionController.ScanForEdges();
     }
@@ -70,13 +74,33 @@ void test_all_controls()
   else 
   {
     // turn led light on have motors deactivated
-    ledController.SetAndEnableRGB();
+    
     ControlBot(DirectionControl::stop_it, 0);
   }
 }
 
 void loop() {
-  test_all_controls();
-  ReturnSonicDistance(20);
+
+
+  
+  if(!switchController.isSwitchActive())
+  {
+    enableAuto = !enableAuto;
+  }
+
+  if(enableAuto)
+  // if()
+  {
+    ledController.SetAndEnableRGB(CRGB::DarkGreen);
+    //
+    autoPilot.Roam();
+  }
+  else 
+  {
+    ledController.SetAndEnableRGB();
+    autoPilot.SetAutoPilot(false);
+  }
+  // test_all_controls();
+  // ReturnSonicDistance(20);
 //  edgeDetectionController.ScanForEdges();
 }

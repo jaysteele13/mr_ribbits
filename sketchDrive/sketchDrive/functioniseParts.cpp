@@ -67,50 +67,50 @@ static void ControlBot(DirectionControl direction, uint8_t _speed)
   }
 }
 
-static boolean biggerORSmaller(uint8_t value, uint8_t biggest) //f(x)
-{
-  if (0 <= value && value <= biggest)
-    return true;
-  else
-    return false;
-}
+// static boolean biggerORSmaller(uint8_t value, uint8_t biggest) //f(x)
+// {
+//   if (0 <= value && value <= biggest)
+//     return true;
+//   else
+//     return false;
+// }
 
 
-static int16_t ReturnSonicDistance(uint8_t threshold) {
-    uint16_t distance = 0;
-    ultraSonicController.UltraSonicGetReading(&distance);
+// static int16_t ReturnSonicDistance(uint8_t threshold) {
+//     uint16_t distance = 0;
+//     ultraSonicController.UltraSonicGetReading(&distance);
     
     
-    // if bot is too close to soemthing
-    if(biggerORSmaller(distance, threshold))
-    {
+//     // if bot is too close to soemthing
+//     if(biggerORSmaller(distance, threshold))
+//     {
       
-      // force led blink
-      ledController.LedBlink();
+//       // force led blink
+//       ledController.LedBlink();
 
-      // log closeness
-      // Serial.print("warning your now past this threshold: ");
-      // Serial.println(threshold);
-      // Serial.print("distance being: ");
-      // Serial.println(distance);
+//       // log closeness
+//       // Serial.print("warning your now past this threshold: ");
+//       // Serial.println(threshold);
+//       // Serial.print("distance being: ");
+//       // Serial.println(distance);
 
-      // shake robot head
-      miniServoController.SetAngle(65);
-      delay(100);
-      miniServoController.SetAngle(115);
-      delay(100);
+//       // shake robot head
+//       miniServoController.SetAngle(65);
+//       delay(100);
+//       miniServoController.SetAngle(115);
+//       delay(100);
   
-    }
-    else
-    {
-      miniServoController.SetAngle(90);
-    }
+//     }
+//     else
+//     {
+//       miniServoController.SetAngle(90);
+//     }
 
-    // reset orrientation
-    delay(100);
+//     // reset orrientation
+//     delay(100);
     
-    miniServoController.Update();
+//     miniServoController.Update();
 
-    return distance;
-}
+//     return distance;
+// }
 
