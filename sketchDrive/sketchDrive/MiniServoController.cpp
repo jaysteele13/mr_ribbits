@@ -1,27 +1,27 @@
+#include "HardwareSerial.h"
 #include "MiniServoController.h"
 #include <Arduino.h>
 
 MiniServoController::MiniServoControllerInit()
 {
-  myservo.attach(PIN_Servo_z, 500, 2400); //500: 0 degree  2400: 180 degree
-  myservo.write(90); //sets the servo position according to the 90（middle）
-  delay(200);
+  int initialAngle = 90;
+  currentAngle = initialAngle;  // Set to the desired initial angle
+  targetAngle = initialAngle;
+  myservo.attach(PIN_Servo_z, 500, 2400);
+  myservo.write(initialAngle); // Move to the initial position
+  delay(50);                   // Allow time for the servo to stabilize
+  myservo.detach();
 }
 
 MiniServoController::SetAngle(uint8_t Position_angle)
 {
-  if (Position_angle != currentAngle) 
-  {
+   if (Position_angle != currentAngle) 
+   {
     targetAngle = Position_angle;
-    myservo.attach(PIN_Servo_z, 500, 2400);  // Attach the servo with specified min/max pulse width
-    myservo.write(targetAngle);              // Move to the target position
-    previousMillis = millis();              // Reset the timer
-    isMoving = true;                         // Mark the servo as moving
-  }
-  else 
-  {
-    myservo.detach();
-  }
+    isMoving = true;  // Start moving
+    previousMillis = millis();
+    myservo.attach(PIN_Servo_z, 500, 2400); // Attach only when needed
+   }
 }
 
 MiniServoController::GetAngle()
@@ -31,15 +31,27 @@ MiniServoController::GetAngle()
 
 MiniServoController::Update() 
 {
-  // If the servo is moving, check if the move is completed
-  if (isMoving) {
-      unsigned long currentMillis = millis();  // Get the current time
+  if (isMoving) 
+  {
+    unsigned long currentMillis = millis();
+    unsigned long elapsedMillis = currentMillis - previousMillis;
 
-      // Check if enough time has passed for the servo to complete its move
-      if (currentMillis - previousMillis >= moveDuration) {
-          myservo.detach();  // Detach the servo after moving
-          currentAngle = targetAngle;  // Update the current angle
-          isMoving = false;   // Mark the servo as no longer moving
-      }
+    // Calculate the expected angle based on elapsed time and speed
+    int step = elapsedMillis * degreesPerMs;
+    if (targetAngle > currentAngle) {
+        currentAngle = min(targetAngle, currentAngle + step);
+    } else if (targetAngle < currentAngle) {
+        currentAngle = max(targetAngle, currentAngle - step);
+    }
+
+    myservo.write(currentAngle);
+    previousMillis = currentMillis; // Reset timer
+
+    // Stop moving if the target angle is reached
+    if (currentAngle == targetAngle) {
+        isMoving = false;
+        delay(50);       // Short delay to stabilize
+        myservo.detach(); // Detach after motion stops
+    }
   }
 }

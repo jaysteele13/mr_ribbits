@@ -9,21 +9,40 @@
 #include "LedController.h"
 #include "MiniServoController.h"
 #include "EdgeDetectionController.h"
-#include "functioniseParts.cpp"
 
 class AutoPilot 
 {
   public:
+    // have default configuration
     enum class RobotState {
       Moving,
       Stopped
     };
+    enum DirectionControl
+    {
+      Forward,
+      Backward,
+      Left,
+      Right,
+      LeftForward,
+      LeftBackward,
+      RightForward,
+      RightBackward,
+      stop_it
+    };
+    // defaults
+    static const uint8_t defaultSensorThreshold = 20;
+    const uint8_t defaultSpeed = 45;
+
+    // public functions
     Init(void);
-    Roam(int duration);
+    Move(DirectionControl direction, uint8_t _speed); 
+    Roam(void);
     Stop(void);
     bool isActive;
-    PivotBySensor(uint8_t threshold);
-    DetectObstacle(uint8_t threshold);
+    SetAutoPilot(bool toggle);
+    PivotBySensor(uint8_t threshold = defaultSensorThreshold);
+    DetectObstacle(uint8_t threshold = defaultSensorThreshold);
     Reverse180(void);
     PivotByEdge(void);
     void SoundBuzzer();
@@ -32,9 +51,8 @@ class AutoPilot
     EdgeDetectionController::Sensor sensorProxy;
     int sonic_distance;
 
-    // have default configuration
+    
   public:
-  
     MotorDriver motorDriver;
     BuzzerController buzzerController;
     UltraSonicController ultraSonicController;

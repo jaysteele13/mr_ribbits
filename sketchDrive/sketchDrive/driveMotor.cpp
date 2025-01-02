@@ -1,3 +1,4 @@
+#include "HardwareSerial.h"
 #include <avr/wdt.h>
 #include <stdio.h>
 #include <string.h>
@@ -21,6 +22,7 @@ void MotorDriver::MotorDriverInit(void)
 void MotorDriver::MotorDriverControl(boolean direction_A, uint8_t speed_A, boolean direction_B, uint8_t speed_B, boolean enableServo)
 {
   // grab public servo enable variable
+  Serial.print("should run motorDriver");
   if(enableServo == enable_servo) { // do if servos are enabled
     digitalWrite(PIN_Motor_STBY, HIGH);
 
