@@ -22,12 +22,6 @@ EdgeDetectionController::reverseRobotBasedOnSensor(int leftValue, int middleValu
   motorDriver.Stop();  
 }
 
-
-
-void moveForward() {
-  Serial.println("Moving forward...");
-}
-
 int getMaxOfThree(int a, int b, int c) {
     if (a >= b && a >= c) {
         return a;
@@ -60,9 +54,6 @@ EdgeDetectionController::Sensor EdgeDetectionController::ScanForEdges()
     else {
       return Sensor::Right;
     }
-    // motorDriver.Stop();     // Stop the robot immediately
-    // buzzerController.PlayTetris();
-    // reverseRobotBasedOnSensor(leftValue, middleValue, rightValue);    // Reverse a little to get away from the edge
   } else {
     return Sensor::None;     // Safe to move forward // this function would be autoPilot
   }
