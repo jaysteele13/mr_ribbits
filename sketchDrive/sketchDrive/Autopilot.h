@@ -21,16 +21,18 @@ class AutoPilot
     Init(void);
     Roam(int duration);
     Stop(void);
-    boolean isActive;
-    ScanSonicDistance(uint8_t threshold);
+    bool isActive;
+    PivotBySensor(uint8_t threshold);
     DetectObstacle(uint8_t threshold);
-    bool DetectEdge();
-    void TiltHead();
+    Reverse180(void);
+    PivotByEdge(void);
     void SoundBuzzer();
   private:
     RobotState state;
     EdgeDetectionController::Sensor sensorProxy;
     int sonic_distance;
+
+    // have default configuration
   public:
   
     MotorDriver motorDriver;

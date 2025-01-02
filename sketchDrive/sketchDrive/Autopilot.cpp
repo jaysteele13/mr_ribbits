@@ -20,8 +20,22 @@ AutoPilot::Roam(int duration)
     ControlBot(DirectionControl::Forward, 100);
     delay(500);
     AutoPilot::Stop();
+    PivotByEdge();
+    PivotBySensor(20) 
+    
+    // for tomorrow:
+    // get default config
+    // amend to signal buzzer noise if something is picked up?
+    // amend so roam has more random movement
 
-    // Now check if sensors are ok
+    // Coding wise finish other demo things for uni!
+    
+  }
+}
+
+AutoPilot::PivotByEdge()
+{
+  // Now check if sensors are ok
     sensorProxy = edgeDetectionController.ScanForEdges();
     if(sensorProxy != EdgeDetectionController::Sensor::None)
     {
@@ -45,19 +59,8 @@ AutoPilot::Roam(int duration)
       }
     }
 
-  
-
-    // if stopped either turn left or right... slowly and go there
-  }
 }
 
-boolean biggerORSmaller(uint8_t value, uint8_t biggest) //f(x)
-{
-  if (0 <= value && value <= biggest)
-    return true;
-  else
-    return false;
-}
 
 AutoPilot::DetectObstacle (uint8_t threshold)
 {
@@ -72,35 +75,82 @@ AutoPilot::DetectObstacle (uint8_t threshold)
 }
 
   // check sonic sensor
-AutoPilot::ScanSonicDistance(uint8_t threshold) {
-      //sonic_distance = 0;
-      while(DetectObstacle(threshold))
+AutoPilot::PivotBySensor(uint8_t threshold) {
+  
+    sonic_distance = miniServoController.GetAngle();
+    miniServoController.SetAngle(90);
+
+    bool checkLeft = false;
+    bool checkMiddle = false;
+
+    // check right hand side for blockages
+    for(int i = 90; i < 180; i += 15) 
+    {
+      if(DetectObstacle(threshold))
       {
-          // force led blink
+              // force led blink
         ledController.LedBlink();
+        miniServoController.SetAngle(i);
+        delay(15);
+        miniServoController.Update(); 
+      }
+      else {
+        checkLeft = true;
+        ControlBot(DirectionControl::Right,  50);
+        delay(500);
+        break;
+      }
       
-        sonic_distance = miniServoController.GetAngle();
-        miniServoController.SetAngle(90);
+    }
 
-        // check right hand side for blockages
+    // reset default
+    miniServoController.SetAngle(90);
+    miniServoController.Update(); 
+    delay(15); 
+
+    if(checkLeft) 
+    {
+        // check left hand side for blockages
+      for(int i = 90; i > 0; i -= 15) 
+      {
+        if(DetectObstacle(threshold))
+        {
+                // force led blink
+          ledController.LedBlink();
+          miniServoController.SetAngle(i);
+          delay(15);
+          miniServoController.Update(); 
+        }
+        else {
+          checkMiddle = true;
+          ControlBot(DirectionControl::Left,  50);
+          delay(500);
+          break;
+        }
         
-        // check every 15 degrees if there is space free on the right, if sensor doesn't go off return Direction to go in
+      }
 
-        // check left handside for blockages
+    }
 
-        // if no scenarios reverse and randomly roam
+    // reset defaults
+    miniServoController.SetAngle(90);
+    miniServoController.Update(); 
+    delay(15); 
 
-        // shake robot head
-        miniServoController.SetAngle(65);
-        delay(100);
-        miniServoController.SetAngle(115);
-        delay(100);
+    // if haven't yet moved
+    // reverse 180
+    if(checkMiddle) 
+    {
+      Reverse180();
+    }
+    
+}
 
-      // reset orrientation
-      delay(100);
-      
-      miniServoController.Update(); 
-  }
+AutoPilot::Reverse180()
+{
+  ControlBot(DirectionControl::Backward, 200);
+  delay(500);
+  ControlBot(DirectionControl::Right, 150);
 }
 
 AutoPilot::Stop() 
