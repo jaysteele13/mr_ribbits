@@ -10,7 +10,7 @@
 - Basic AutoPilot -> Autonomous Driving
 - Autopilot Can be toggled.
 - Plays meme song when he is switched off, (he memes on people)
-- Suicide Prevention
+- SuicidePrevention()
 - hes chill
 
 ### What to implement:
