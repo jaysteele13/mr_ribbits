@@ -10,12 +10,12 @@
 - Basic AutoPilot -> Autonomous Driving
 - Autopilot Can be toggled.
 - Plays meme song when he is switched off, (he memes on people)
+- isGrounded Feature
+- play Tetris theme when not grounded
 - SuicidePrevention()
 - hes chill
 
 ### What to implement:
-- isGrounded Feature
-- play Tetris theme when not grounded
 - Easter Egg feature - play hidden song by hidden button
 - Configure Camera
 - AI with Camera? If Uno can hack it.
