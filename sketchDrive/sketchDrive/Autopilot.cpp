@@ -62,7 +62,7 @@ AutoPilot::Move(DirectionControl direction, uint8_t _speed) {
 AutoPilot::SetAutoPilot(bool toggle) { isActive = toggle; }
 
 AutoPilot::Roam() {
-  if (isActive) {
+  if (isActive && IsGrounded()) {
     // default go straight
     ledController.SetAndEnableRGB(CRGB::DarkGreen);
     delay(15);
@@ -75,9 +75,22 @@ AutoPilot::Roam() {
     PivotBySensor();
     StopBySwitch();
   }
+  else if(!IsGrounded())
+  {
+    if(grounded_song_flag) 
+    {
+      Stop();
+      isActive = false; // Disable AutoPilot
+      buzzerController.PlayTetris();
+      grounded_song_flag = false;
+      ledController.SetAndEnableRGB();
+      delay(10);
+    }
+  }
   else {
     ledController.SetAndEnableRGB();
   }
+  
 }
 
 AutoPilot::PivotByEdge() {
@@ -188,9 +201,7 @@ AutoPilot::StopBySwitch()
 {
   if(!switchController.isSwitchActive()) 
   {
-    
     isActive = false;
-    Serial.print(isActive);
     Stop();
     // Stand By Sound
     buzzerController.PlayTheLick();
@@ -198,3 +209,49 @@ AutoPilot::StopBySwitch()
   }
   
 }
+
+AutoPilot::SetGroundedMusicFlag(bool toggle)
+{
+  grounded_song_flag = toggle;
+}
+
+bool AutoPilot::IsGrounded()
+{
+    delay(50); // stabolitly;
+    static unsigned long startTime = 0;
+    const unsigned long debounceDuration = 3000; // 2 seconds in milliseconds
+
+    // Read sensor values
+    int leftValue = analogRead(LEFT_SENSOR_PIN);
+    int middleValue = analogRead(MIDDLE_SENSOR_PIN);
+    int rightValue = analogRead(RIGHT_SENSOR_PIN);
+
+    // godly lambda function resolves this!
+    auto checkPersistence = [](int value, int threshold, unsigned long& startTime) -> bool {
+        if (value > threshold) {
+            if (startTime == 0) {
+                startTime = millis(); // Start timing when threshold is first exceeded
+            }
+            // Check if the condition has persisted long enough
+            if (millis() - startTime >= debounceDuration) {
+                return false;
+            }
+        } else {
+            // Reset the timer if the value drops below the threshold
+            startTime = 0;
+        }
+        return true;
+    };
+
+    bool ground = checkPersistence(leftValue, GROUNDED_THRESHOLD, startTime);
+
+    if(ground) 
+    {
+      grounded_song_flag = true;
+    }
+
+    return ground;
+
+    
+}
+

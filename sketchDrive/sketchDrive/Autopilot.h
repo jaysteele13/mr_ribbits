@@ -41,8 +41,10 @@ class AutoPilot
     Roam(void);
     Stop(void);
     StopBySwitch(void);
+    bool IsGrounded();
     bool isActive;
     SetAutoPilot(bool toggle);
+    SetGroundedMusicFlag(bool toggle);
     PivotBySensor(uint8_t threshold = defaultSensorThreshold);
     DetectObstacle(uint8_t threshold = defaultSensorThreshold);
     Reverse180(void);
@@ -53,6 +55,7 @@ class AutoPilot
     RobotState state;
     EdgeDetectionController::Sensor sensorProxy;
     int sonic_distance;
+    bool grounded_song_flag = true;
 
     
   public:

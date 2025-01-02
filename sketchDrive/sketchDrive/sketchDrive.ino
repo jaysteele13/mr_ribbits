@@ -12,6 +12,7 @@ void setup() {
   Serial.begin(9600);
   autoPilot.SetAutoPilot(false);
   autoPilot.Init();
+  delay(1000);
 }
 
 void loop() {
@@ -21,7 +22,7 @@ void loop() {
     {
       autoPilot.SetAutoPilot(true);
     }
-
+   
     // General Lazy AutoPilot
     autoPilot.Roam();
 
