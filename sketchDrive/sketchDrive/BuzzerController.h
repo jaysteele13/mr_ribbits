@@ -12,9 +12,6 @@ class BuzzerController
     PlayTetris(void);
   private:
     #define PIN_OUT 11
-  
-  public:
-    
 };
 
 #endif

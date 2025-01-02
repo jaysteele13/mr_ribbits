@@ -1,11 +1,12 @@
 #include <avr/wdt.h>
-#include "driveMotor.h"
-#include "SwitchController.h"
-#include "LedController.h"
-#include "UltraSonicController.h"
+
+#include "Autopilot.h"
 #include "BuzzerController.h"
 #include "EdgeDetectionController.h"
-#include "Autopilot.h"
+#include "LedController.h"
+#include "SwitchController.h"
+#include "UltraSonicController.h"
+#include "driveMotor.h"
 
 // main vars
 MotorDriver motorDriver;
@@ -17,7 +18,6 @@ BuzzerController buzzerController;
 EdgeDetectionController edgeDetectionController;
 AutoPilot autoPilot;
 bool enableAuto = true;
-
 
 void setup() {
   Serial.begin(9600);
@@ -31,25 +31,19 @@ void setup() {
   miniServoController.MiniServoControllerInit();
 }
 
-void loop() {  
-  if(!switchController.isSwitchActive())
-  {
+void loop() {
+  if (!switchController.isSwitchActive()) {
     enableAuto = !enableAuto;
   }
 
-  if(enableAuto)
+  if (enableAuto)
   // if()
   {
     ledController.SetAndEnableRGB(CRGB::DarkGreen);
     //
     autoPilot.Roam();
-  }
-  else 
-  {
+  } else {
     ledController.SetAndEnableRGB();
     autoPilot.SetAutoPilot(false);
   }
-  // test_all_controls();
-  // ReturnSonicDistance(20);
-//  edgeDetectionController.ScanForEdges();
 }
