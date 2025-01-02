@@ -2,6 +2,17 @@
 #include "Arduino.h"
 #include "Autopilot.h"
 
+AutoPilot::Init()
+{
+  edgeDetectionController.Init();
+  motorDriver.MotorDriverInit();
+  buzzerController.BuzzerControllerInit();
+  switchController.SwitchControllerInit();
+  ledController.LedControllerInit();
+  ultraSonicController.UltraSonicControllerInit();
+  miniServoController.MiniServoControllerInit();
+}
+
 AutoPilot::Move(DirectionControl direction, uint8_t _speed) {
   static uint8_t directionRecord = 0;
   uint8_t lowerLimit, upperLimit;
@@ -51,12 +62,6 @@ AutoPilot::Move(DirectionControl direction, uint8_t _speed) {
 AutoPilot::SetAutoPilot(bool toggle) { isActive = toggle; }
 
 AutoPilot::Roam() {
-  /* When auto pilot roaming I must be checking many things
-  - Sensor to see whats in fron
-  - edgeDetection to not fall off things
-  - perhaps current rotation
-  - check every 500ms?
-  */
   if (isActive) {
     // default go straight
     ledController.SetAndEnableRGB(CRGB::DarkGreen);
@@ -69,12 +74,9 @@ AutoPilot::Roam() {
     PivotByEdge();
     PivotBySensor();
     StopBySwitch();
-
-    // for tomorrow:
-    // amend to signal buzzer noise if something is picked up?
-    // amend so roam has more random movement
-
-    // Coding wise finish other demo things for uni!
+  }
+  else {
+    ledController.SetAndEnableRGB();
   }
 }
 
@@ -118,21 +120,14 @@ AutoPilot::DetectObstacle(uint8_t threshold) {
 }
 
 // check sonic sensor real
-AutoPilot::PivotBySensor(uint8_t threshold) {
-  // miniServoController.Update();
-
-  sonic_distance = miniServoController.GetAngle();
-
+AutoPilot::PivotBySensor(uint8_t threshold) 
+{
   bool checkLeft = false;
   bool checkMiddle = false;
 
   if (DetectObstacle(threshold)) {
     // check right hand side for blockages
     for (int i = 120; i <= 180; i += 30) {
-      Serial.print("angle: ");
-      Serial.println(i);
-      Serial.print("curent angle: ");
-      Serial.println(miniServoController.GetAngle());
       ledController.LedBlink();
       miniServoController.SetAngle(i);
       delay(100);
@@ -155,10 +150,6 @@ AutoPilot::PivotBySensor(uint8_t threshold) {
       // check left hand side for blockages
       for (int i = 90; i >= 0; i -= 30) {
         // force led blink
-        Serial.print("left angle: ");
-        Serial.println(i);
-        Serial.print("curent angle: ");
-        Serial.println(miniServoController.GetAngle());
         ledController.LedBlink();
         miniServoController.SetAngle(i);
         delay(100);
