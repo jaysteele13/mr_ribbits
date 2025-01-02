@@ -1,6 +1,5 @@
 #include "Arduino.h"
 #include "Autopilot.h"
-#include "HardwareSerial.h"
 
 AutoPilot::Move(DirectionControl direction, uint8_t _speed) {
   static uint8_t directionRecord = 0;

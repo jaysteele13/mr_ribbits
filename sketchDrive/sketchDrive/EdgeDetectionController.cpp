@@ -8,26 +8,6 @@ EdgeDetectionController::Init()
   pinMode(RIGHT_SENSOR_PIN, INPUT);
 }
 
-EdgeDetectionController::reverseRobotBasedOnSensor(int leftValue, int middleValue, int rightValue) {
-  if (leftValue < THRESHOLD) {
-    Serial.println("Reversing and turning right...");
-  } else if (rightValue < THRESHOLD) {
-    // Edge detected on the right; turn left while reversing
-    Serial.println("Reversing and turning left...");
-  } else if (middleValue < THRESHOLD) {
-    // Edge detected in the middle; reverse straight back
-    Serial.println("Reversing straight...");
-  }
-  delay(500);
-  motorDriver.Stop();  
-}
-
-
-
-void moveForward() {
-  Serial.println("Moving forward...");
-}
-
 int getMaxOfThree(int a, int b, int c) {
     if (a >= b && a >= c) {
         return a;
@@ -60,9 +40,6 @@ EdgeDetectionController::Sensor EdgeDetectionController::ScanForEdges()
     else {
       return Sensor::Right;
     }
-    // motorDriver.Stop();     // Stop the robot immediately
-    // buzzerController.PlayTetris();
-    // reverseRobotBasedOnSensor(leftValue, middleValue, rightValue);    // Reverse a little to get away from the edge
   } else {
     return Sensor::None;     // Safe to move forward // this function would be autoPilot
   }
