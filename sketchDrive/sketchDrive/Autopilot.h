@@ -9,6 +9,7 @@
 #include "LedController.h"
 #include "MiniServoController.h"
 #include "EdgeDetectionController.h"
+#include "SwitchController.h"
 
 class AutoPilot 
 {
@@ -39,6 +40,7 @@ class AutoPilot
     Move(DirectionControl direction, uint8_t _speed); 
     Roam(void);
     Stop(void);
+    StopBySwitch(void);
     bool isActive;
     SetAutoPilot(bool toggle);
     PivotBySensor(uint8_t threshold = defaultSensorThreshold);
@@ -46,6 +48,7 @@ class AutoPilot
     Reverse180(void);
     PivotByEdge(void);
     void SoundBuzzer();
+    
   private:
     RobotState state;
     EdgeDetectionController::Sensor sensorProxy;
@@ -59,6 +62,7 @@ class AutoPilot
     EdgeDetectionController edgeDetectionController;
     LedController ledController;
     MiniServoController miniServoController;
+    SwitchController switchController;
 };
 
 #endif

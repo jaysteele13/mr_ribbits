@@ -17,11 +17,10 @@ MiniServoController miniServoController;
 BuzzerController buzzerController;
 EdgeDetectionController edgeDetectionController;
 AutoPilot autoPilot;
-bool enableAuto = true;
 
 void setup() {
   Serial.begin(9600);
-  autoPilot.SetAutoPilot(true);
+  autoPilot.SetAutoPilot(false);
   edgeDetectionController.Init();
   motorDriver.MotorDriverInit();
   buzzerController.BuzzerControllerInit();
@@ -31,19 +30,24 @@ void setup() {
   miniServoController.MiniServoControllerInit();
 }
 
-void loop() {
-  if (!switchController.isSwitchActive()) {
-    enableAuto = !enableAuto;
-  }
 
-  if (enableAuto)
-  // if()
-  {
-    ledController.SetAndEnableRGB(CRGB::DarkGreen);
-    //
+void loop() {
+
+    if(!switchController.isSwitchActive()) 
+    {
+      autoPilot.SetAutoPilot(true);
+    }
+
+    
+    if(autoPilot.isActive) 
+    {
+      ledController.SetAndEnableRGB(CRGB::DarkGreen);
+    }
+    else 
+    {
+      ledController.SetAndEnableRGB();
+      // ledController.LedBlink() have it blink when close;
+    }
     autoPilot.Roam();
-  } else {
-    ledController.SetAndEnableRGB();
-    autoPilot.SetAutoPilot(false);
-  }
+
 }
