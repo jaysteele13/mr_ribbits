@@ -1,3 +1,4 @@
+#include "HardwareSerial.h"
 #include "EdgeDetectionController.h"
 #include <Arduino.h>
 
