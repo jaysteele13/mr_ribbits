@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "HardwareSerial.h"
 #include "Autopilot.h"
 
@@ -216,67 +217,106 @@ AutoPilot::PivotBySensor(uint8_t threshold) {
     bool checkLeft = false;
     bool checkMiddle = false;
 
-    if(DetectObstacle(threshold))
+    while(DetectObstacle(threshold))
     {
       
-    }
+    
     // check right hand side for blockages
-    for(int i = 90; i < 180; i += 30) 
+    for(int i = 120; i <= 180; i += 30) 
     {
-      if(DetectObstacle(threshold))
-      {
+     
               // force led blink
-        ledController.LedBlink();
-        Serial.println("check right");
-        miniServoController.SetAngle(i);
-        miniServoController.Update(); 
-        delay(1000); 
-        
-      }
-      else {
-        //miniServoController.Update();
-        checkLeft = true;
+      Serial.print("angle: ");
+      Serial.println(i);
+      
+      Serial.print("curent angle: ");
+      Serial.println(miniServoController.GetAngle());
+      ledController.LedBlink();
+      miniServoController.AddAngle(i);
+      delay(250);
+
+      if(!DetectObstacle(threshold)) {
+        miniServoController.Update();
         Move(DirectionControl::Right,  defaultSpeed);
         delay(100);
         break;
       }
+
+      if(i == 180)
+      {
+        miniServoController.Update(); 
+        delay(100); // delay to update
+        checkLeft = true;
+      }
+
+        
+      
+      // else {
+      //   //miniServoController.Update();
+      //   checkLeft = true;
+      //   Move(DirectionControl::Right,  defaultSpeed);
+      //   delay(100);
+      //   break;
+      // }
       
     }
 
     // reset default
-    miniServoController.SetAngle(90);
+    
+
+    miniServoController.AddAngle(90);
     miniServoController.Update(); 
     delay(15); 
+
+     if(!DetectObstacle(threshold)) {
+        break;
+      }
 
     if(checkLeft) 
     {
         // check left hand side for blockages
-      for(int i = 90; i > 0; i -= 15) 
-      {
-        if(DetectObstacle(threshold))
-        {
-                // force led blink
-          Serial.println("check right");
-          ledController.LedBlink();
-           
-          miniServoController.SetAngle(i);
-          miniServoController.Update();
-          delay(1000);
-          
-        }
-        else {
-          checkMiddle = true;
-          Move(DirectionControl::Left,  defaultSpeed);
-          delay(500);
-          break;
-        }
-        
+      for(int i = 90; i >= 0; i -= 30) 
+    {
+     
+              // force led blink
+      Serial.print("angle: ");
+      Serial.println(i);
+      Serial.print("curent angle: ");
+      Serial.println(miniServoController.GetAngle());
+      ledController.LedBlink();
+      miniServoController.AddAngle(i);
+      delay(250);
+  
+      if(!DetectObstacle(threshold)) {
+        miniServoController.Update(); 
+        Move(DirectionControl::Right,  defaultSpeed);
+        delay(100);
+
+        break;
       }
+
+      if(i == 180)
+      {
+        miniServoController.Update(); 
+        checkMiddle = true;
+      }
+
+        
+      
+      // else {
+      //   //miniServoController.Update();
+      //   checkLeft = true;
+      //   Move(DirectionControl::Right,  defaultSpeed);
+      //   delay(100);
+      //   break;
+      // }
+      
+    }
 
     }
 
     // reset defaults
-    miniServoController.SetAngle(90);
+    miniServoController.AddAngle(90);
     miniServoController.Update(); 
     delay(15); 
 
@@ -285,6 +325,8 @@ AutoPilot::PivotBySensor(uint8_t threshold) {
     if(checkMiddle) 
     {
       Reverse180();
+    }
+    break;
     }
     
 }
