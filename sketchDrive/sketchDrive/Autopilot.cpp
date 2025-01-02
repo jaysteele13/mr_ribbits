@@ -1,3 +1,4 @@
+#include "HardwareSerial.h"
 #include "Arduino.h"
 #include "Autopilot.h"
 
@@ -58,6 +59,7 @@ AutoPilot::Roam() {
   */
   if (isActive) {
     // default go straight
+    ledController.SetAndEnableRGB(CRGB::DarkGreen);
     delay(15);
     state = RobotState::Moving;
     // Serial.println("should move forward");
@@ -66,6 +68,7 @@ AutoPilot::Roam() {
     AutoPilot::Stop();
     PivotByEdge();
     PivotBySensor();
+    StopBySwitch();
 
     // for tomorrow:
     // amend to signal buzzer noise if something is picked up?
@@ -188,4 +191,19 @@ AutoPilot::Reverse180() {
 AutoPilot::Stop() {
   motorDriver.Stop();
   state = RobotState::Stopped;
+}
+
+AutoPilot::StopBySwitch()
+{
+  if(!switchController.isSwitchActive()) 
+  {
+    
+    isActive = false;
+    Serial.print(isActive);
+    Stop();
+    // Stand By Sound
+    buzzerController.PlayTheLick();
+    delay(500);
+  }
+  
 }
