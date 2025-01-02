@@ -21,7 +21,7 @@ AutoPilot::Roam(int duration)
     delay(500);
     AutoPilot::Stop();
     PivotByEdge();
-    PivotBySensor(20) 
+    PivotBySensor(20);
     
     // for tomorrow:
     // get default config
