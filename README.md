@@ -16,10 +16,10 @@
 - hes chill
 
 ### What to implement:
-- Easter Egg feature - play hidden song by hidden button
 - Configure Camera
 - AI with Camera? If Uno can hack it.
 - More advanced Autopilot... Autopilotv2!
+- Easter Egg feature - play hidden song by hidden button
 
 ### Is there lost potential?
 1. IS set up to **detect acceleration, current rotation and temperature**, however have disabled this due to the memory cost and lack of innovative ideas to explore these features.
