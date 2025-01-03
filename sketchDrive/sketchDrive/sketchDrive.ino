@@ -17,13 +17,15 @@ void setup() {
 
 void loop() {
 
+  Serial.print(switchController.isButtonActive());
+  delay(500);
     // How to Enable AutoPilot
-    if(!switchController.isSwitchActive()) 
-    {
-      autoPilot.SetAutoPilot(true);
-    }
+    // if(!switchController.isSwitchActive()) 
+    // {
+    //   autoPilot.SetAutoPilot(true);
+    // }
    
-    // General Lazy AutoPilot
-    autoPilot.Roam();
+    // // General Lazy AutoPilot
+    // autoPilot.Roam();
 
 }
