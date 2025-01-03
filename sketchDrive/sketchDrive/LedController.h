@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <avr/wdt.h>
-#include "FastLED.h"
+#include <FastLED.h>
 
 class LedController 
 {
