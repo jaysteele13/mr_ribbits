@@ -20,3 +20,6 @@
 - Configure Camera
 - AI with Camera? If Uno can hack it.
 - More advanced Autopilot... Autopilotv2!
+
+### Is there lost potential?
+1. IS set up to **detect acceleration, current rotation and temperature**, however have disabled this due to the memory cost and lack of innovative ideas to explore these features.
