@@ -8,6 +8,12 @@ WiFiServer server(100);
 
 CameraServerController cameraServerController;
 
+// NOTE: esp32 espressiv board must be at v.2.0.14 also here is how the tools should be configured:
+//            USB CDC On Boot ---> Enabled
+//            Flash Size ---> 8MB(64Mb)
+//            Partition Scheme ---> 8M with spiffs (3MB APP/1.5MB SPIFFS)
+//            PSRAM ---> OPI PSRAM
+
 void setup()
 {
   // Initialise Serials
