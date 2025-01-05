@@ -1,6 +1,30 @@
 #include "CameraApplication.h"
 
+// HTML Handler
+esp_err_t Camera_Application::html_handler(httpd_req_t *req) {
+    // -------- Manage HTML Page ---------
+    const char* html = "<!DOCTYPE html>"
+                       "<html>"
+                       "<head>"
+                       "<title>ESP32 Camera Stream</title>"
+                       "<style>"
+                       "body { margin: 0; padding: 0; text-align: center; }"
+                       "h1 { font-size: 24px; color: #333; }"
+                       "#stream { width: 100%; max-width: 600px; margin: 0 auto; }"
+                       "</style>"
+                       "</head>"
+                       "<body>"
+                       "<h1>ESP32 Camera Stream</h1>"
+                       "<img id='stream' src='/stream' />"
+                       "</body>"
+                       "</html>";
+
+    httpd_resp_set_type(req, "text/html");
+    return httpd_resp_send(req, html, strlen(html));
+}
+
 esp_err_t Camera_Application::stream_handler(httpd_req_t *req) {
+    // ----------------------- Manage Camera Stream, buffering and configuration -------------------------
     // httpd_req_t *req is a pointer to the HTTP request object.
     // esp_err_t is a type representing error codes returned by ESP functions.
 
@@ -79,7 +103,15 @@ void Camera_Application::startCameraApp() {
     config.max_uri_handlers = 8; // can handle 8 uri paths like /stream, /jpeg
     httpd_handle_t stream_httpd = NULL; 
 
-    // define general tream handler
+     // Register the HTML handler
+    httpd_uri_t html_uri = {
+        .uri = "/",
+        .method = HTTP_GET,
+        .handler = html_handler,
+        .user_ctx = NULL
+    };
+
+    // define general stream handler
     httpd_uri_t stream_uri = {
         .uri = "/stream",
         .method = HTTP_GET,
@@ -88,6 +120,7 @@ void Camera_Application::startCameraApp() {
     };
 
     if (httpd_start(&stream_httpd, &config) == ESP_OK) {
+        httpd_register_uri_handler(stream_httpd, &html_uri);
         httpd_register_uri_handler(stream_httpd, &stream_uri);
     }
 }
