@@ -5,6 +5,7 @@
 
 void CameraServerController::Init(void) {
 
+  // Config
   Serial.setDebugOutput(true);
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -34,7 +35,7 @@ void CameraServerController::Init(void) {
   config.jpeg_quality = 10;
   config.fb_count = 2;
 
-  // init with high specs to pre-allocate larger buffers
+  // Will work if tooling is set up correctly
   if (config.pixel_format == PIXFORMAT_JPEG) {
     if (psramFound()) {
       config.jpeg_quality = 10;
@@ -48,22 +49,20 @@ void CameraServerController::Init(void) {
   } else {
     // Best option for face detection/recognition
     config.frame_size = FRAMESIZE_240X240;
-    #if CONFIG_IDF_TARGET_ESP32S3
-    config.fb_count = 2;
-    #endif
   }
 
-  // camera initial
+  // Initialise esp camera.
   esp_err_t err = esp_camera_init( & config);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
   }
 
+  // Grab camera sensor, this is configured as long as pins are correct.
   sensor_t * s = esp_camera_sensor_get();
 
+  // Ensure camera see's as it should.
   if (s -> id.PID == OV3660_PID) {
-    s -> set_vflip(s, 1); // flip it back
     s -> set_brightness(s, 1); // up the brightness just a bit
     s -> set_saturation(s, -2); // lower the saturation
   }
@@ -77,34 +76,28 @@ void CameraServerController::Init(void) {
 
   }
 
+  // Could probs add to a general config.
   #if defined(CAMERA_MODEL_ESP32S3_EYE)
   s -> set_vflip(s, 1);
   s -> set_hmirror(s, 1);
   #endif
 
-  // Configure Wifi
-  uint64_t chipid = ESP.getEfuseMac();
-  char string[10];
-  sprintf(string, "%04X", (uint16_t)(chipid >> 32));
-  String mac0_default = String(string);
-  sprintf(string, "%08X", (uint32_t) chipid);
-  String mac1_default = String(string);
-  String url = password + mac0_default + mac1_default;
-  const char * mac_default = url.c_str();
-
+  // Print IP
   Serial.println(":----------------------------:");
   Serial.print("SSID: ");
   Serial.println(ssid);
   Serial.println(":----------------------------:");
-  wifi_name = mac0_default + mac1_default;
 
   WiFi.setTxPower(WIFI_POWER_19_5dBm);
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid, password, 13);
+
+  // Start web and camera app / operations
   app.startCameraApp();
 
   Serial.println("Camera Ready!");
 
+  // make this more dynamic
   Serial.print("Use 'http://");
   Serial.print(WiFi.softAPIP());
   Serial.print("/stream");

@@ -1,5 +1,6 @@
 #ifndef CAMERASERVERCONTROLLER_H
 #define CAMERASERVERCONTROLLER_H
+
 #include "esp_camera.h"
 #include "CameraApplication.h"
 #include <WiFi.h>
@@ -9,8 +10,6 @@ class CameraServerController
 
 public:
   void Init(void);
-  String wifi_name;
-
 private:
   // instance of web application
   Camera_Application app;

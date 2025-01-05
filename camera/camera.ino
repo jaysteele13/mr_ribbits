@@ -1,6 +1,7 @@
 #include "CameraServerController.h"
 #include <WiFi.h>
 #include "esp_camera.h"
+
 WiFiServer server(100);
 
 #define RXD2 3
