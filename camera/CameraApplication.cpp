@@ -2,22 +2,45 @@
 
 // HTML Handler
 esp_err_t Camera_Application::html_handler(httpd_req_t *req) {
-    // -------- Manage HTML Page ---------
-    const char* html = "<!DOCTYPE html>"
-                       "<html>"
-                       "<head>"
-                       "<title>ESP32 Camera Stream</title>"
-                       "<style>"
-                       "body { margin: 0; padding: 0; text-align: center; }"
-                       "h1 { font-size: 24px; color: #333; }"
-                       "#stream { width: 100%; max-width: 600px; margin: 0 auto; }"
-                       "</style>"
-                       "</head>"
-                       "<body>"
-                       "<h1>ESP32 Camera Stream</h1>"
-                       "<img id='stream' src='/stream' />"
-                       "</body>"
-                       "</html>";
+    // -------- Manage HTML Page -> Would rather have in sperate file, this is good enough ---------
+    const char* html = R"rawliteral(<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #fdf1e6; /* Pastel peach */
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: "Roboto", sans-serif;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #6b705c; /* Pastel green */
+        }
+        #stream {
+            max-width: 90%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #ribit {
+            width: 40px;
+            border-radius: 2px;
+        }
+    </style>
+    <title>Mr Ribits Eyeballs</title>
+</head>
+<body>
+    <img id="ribit" src="data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALBAMAAACNJ7BwAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAC1QTFRFLU9xlJ6lk5aTkpN4O1t8AAAAucbQIUt1hYVeTm6PCDhokJGRd4eWubu7kqW4VMUejQAAAA90Uk5Tz/////sADff/5/9a9/+75ZA/MgAAAHZJREFUeJxjeFk5pfzMmXJP93kM5bJ33ZWUVt69uIChxqJD0mXKxI6mAwwTm5UNy92FjSwkGQ4ZKRuuWiWspCHJMKlJ2WZVFVBUgKFGo1m9vNzRotGBweWQjpeLyxIlnUqGlwxQMI8hDQh27waRDKFAsHs3iAQAfHkpSLCBfwsAAAAASUVORK5CYII=" alt="Lil man balls">
+    <h1 class="text-monospace font-weight-light font-italic">Ribits View</h1>
+    <img id="stream" src="/stream" alt="Live Stream from ESP32 Camera" />
+</body>
+</html>)rawliteral";
 
     httpd_resp_set_type(req, "text/html");
     return httpd_resp_send(req, html, strlen(html));

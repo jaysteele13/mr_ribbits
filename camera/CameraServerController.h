@@ -4,6 +4,7 @@
 #include "esp_camera.h"
 #include "CameraApplication.h"
 #include <WiFi.h>
+#include "esp_system.h"
 
 class CameraServerController
 {
