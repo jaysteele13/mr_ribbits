@@ -1,7 +1,7 @@
 #define CAMERA_MODEL_ESP32S3_EYE
 
 #include "CameraServerController.h"
-#include "esp_system.h"
+
 
 void CameraServerController::Init(void) {
 

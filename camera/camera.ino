@@ -1,6 +1,8 @@
 #include "CameraServerController.h"
 #include <WiFi.h>
 #include "esp_camera.h"
+#include "LittleFS.h"
+
 
 WiFiServer server(100);
 
@@ -15,11 +17,32 @@ CameraServerController cameraServerController;
 //            Partition Scheme ---> 8M with spiffs (3MB APP/1.5MB SPIFFS)
 //            PSRAM ---> OPI PSRAM
 
+// void listFiles() {
+//     Serial.println("Listing files:");
+//     File root = LittleFS.open("/");
+//     File file = root.openNextFile();
+//     while (file) {
+//         Serial.print("FILE: ");
+//         Serial.println(file.name());
+//         file = root.openNextFile();
+//     }
+// }
+
+
 void setup()
 {
   // Initialise Serials
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+
+  // need this to get local files!
+  // To send files go cmd shift p and type "Upload little FS/PICO..."
+  // if (!LittleFS.begin()) {
+  //   Serial.println("Failed to initialize LittleFS");
+  //   return;
+  // }
+
+  // listFiles();
 
   // Initialise these pins (dk why but why but have too)
   pinMode(46, OUTPUT);

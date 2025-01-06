@@ -17,8 +17,10 @@
 
 class Camera_Application {
 public:
-    static esp_err_t stream_handler(httpd_req_t *req); // Function declaration
-    void startCameraApp();
+  void startCameraApp();
+private:
+  static esp_err_t stream_handler(httpd_req_t *req); // Function declaration
+  static esp_err_t html_handler(httpd_req_t *req); // Function declaration
 };
 
 #endif 
