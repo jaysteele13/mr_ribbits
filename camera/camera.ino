@@ -3,6 +3,16 @@
 #include "esp_camera.h"
 #include "LittleFS.h"
 
+/*
+
+Thurs 9th:
+
+- Bleed in some face detction logic from other file
+- Try and test between every logic bled
+- Have AI stuff prepped to show saugat, mainly model training approach and cuurent scores saved on notes
+
+
+*/
 
 WiFiServer server(100);
 
