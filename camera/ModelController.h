@@ -7,12 +7,17 @@
 #include "img_converters.h"
 #include "fb_gfx.h"
 #include "esp32-hal-ledc.h"
+#include "esp32-hal-log.h"
 #include "sdkconfig.h"
 #include "camera_index.h"
 #include <vector>
+// Models
 #include "human_face_detect_msr01.hpp"
+#include "human_face_detect_mnp01.hpp"
 #include "face_recognition_tool.hpp"
 #include "face_recognition_112_v1_s8.hpp"
+#include <Arduino.h>
+
 
     // ------------- Structs --------------
 typedef struct
@@ -35,20 +40,14 @@ public:
   FaceRecognition112V1S8 recognizer; // define library which uses model, to implement my own woould need ot understand how this one works
 
   // -------- Functions ------------
+  SmoothingFilter *SmoothingFilterInit(SmoothingFilter *filter, size_t sample_size);
   void DrawBoxesOnFaces(fb_data_t *fb, std::list<dl::detect::result_t> *results, int face_id);
   int RunFaceRecognition(fb_data_t *fb, std::list<dl::detect::result_t> *results);
   void startCameraApp();
+  static esp_err_t html_handler(httpd_req_t *req);
 
   // Temp
-  esp_err_t stream_handler(httpd_req_t *req);
-
-  // A static wrapper function, required for the HTTP server to use it as a handler
-  static esp_err_t static_stream_handler(httpd_req_t *req) {
-        // Retrieve the instance of ModelController using user_ctx
-        ModelController* controller = reinterpret_cast<ModelController*>(req->user_ctx);
-        return controller->stream_handler(req);  // Call the non-static method on the instance
-  }
-
+  static esp_err_t stream_handler(httpd_req_t *req);
 
 private:
 // need
@@ -65,7 +64,7 @@ learn with streaming  function how to incorporate model
 
   void printToFrameHelper(fb_data_t *fb, uint32_t color, const char *str); 
   int printToFrame(fb_data_t *fb, uint32_t color, const char *format, ...);
-  SmoothingFilter *SmoothingFilterInit(SmoothingFilter *filter, size_t sample_size);
+  
   esp_err_t HeaderAvailableStatus(httpd_req_t *req, char **obuf);
 
   //  ------------ Functions - End -------------------
@@ -91,6 +90,7 @@ learn with streaming  function how to incorporate model
   #define QUANT_TYPE 0  //if set to 1 => very large firmware, very slow, reboots when streaming...
   #define ENROLL_CONFIRM_TIMES 5
   #define FACE_ID_SAVE_NUMBER 7
+  #define TWO_STAGE 1 /*<! 1: detect by two-stage which is more accurate but slower(with keypoints). */
 
   // Colors
   #define FACE_COLOR_WHITE 0x00FFFFFF
@@ -103,10 +103,10 @@ learn with streaming  function how to incorporate model
   #define FACE_COLOR_PURPLE (FACE_COLOR_BLUE | FACE_COLOR_RED)
 
   // Streaming Counterpart
-  #define PART_BOUNDARY "123456789000000000000987654321"
-  const char *_STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
-  const char *_STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
-  const char *_STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\nX-Timestamp: %d.%06d\r\n\r\n";
+  // #define PART_BOUNDARY "123456789000000000000987654321"
+  // const char *_STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
+  // const char *_STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
+  // const char *_STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\nX-Timestamp: %d.%06d\r\n\r\n";
   
 
 };

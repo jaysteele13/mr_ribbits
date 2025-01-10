@@ -1,4 +1,4 @@
-#include "esp32-hal-log.h"
+
 #include "ModelController.h"
 
 // Helper function to print text to frame
@@ -141,210 +141,270 @@ int ModelController::RunFaceRecognition(fb_data_t *fb, std::list<dl::detect::res
   return recognize.id;
 }
 
+// HTML Handler
+esp_err_t ModelController::html_handler(httpd_req_t *req) {
+    // -------- Manage HTML Page -> Would rather have in sperate file, this is good enough ---------
+    const char* html = R"rawliteral(<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #fdf1e6; /* Pastel peach */
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: "Roboto", sans-serif;
+        }
+        h1 {
+            font-size: 6rem;
+            color: #6b705c; /* Pastel green */
+        }
+        #stream {
+            width: 800px;
+            height: 800px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #ribit {
+            width: 40px;
+            border-radius: 2px;
+        }
+    </style>
+    <title>Mr Ribits Eyeballs</title>
+</head>
+<body>
+    <img id="ribit" src="data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALBAMAAACNJ7BwAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAC1QTFRFLU9xlJ6lk5aTkpN4O1t8AAAAucbQIUt1hYVeTm6PCDhokJGRd4eWubu7kqW4VMUejQAAAA90Uk5Tz/////sADff/5/9a9/+75ZA/MgAAAHZJREFUeJxjeFk5pfzMmXJP93kM5bJ33ZWUVt69uIChxqJD0mXKxI6mAwwTm5UNy92FjSwkGQ4ZKRuuWiWspCHJMKlJ2WZVFVBUgKFGo1m9vNzRotGBweWQjpeLyxIlnUqGlwxQMI8hDQh27waRDKFAsHs3iAQAfHkpSLCBfwsAAAAASUVORK5CYII=" alt="Lil man balls">
+    <h1 class="text-monospace font-weight-light font-italic">Ribits View</h1>
+    <img id="stream" src="/stream" alt="Live Stream from ESP32 Camera" />
+</body>
+</html>)rawliteral";
+
+    httpd_resp_set_type(req, "text/html");
+    return httpd_resp_send(req, html, strlen(html));
+}
 
 
-// UNDERSTAND THI STREAM HANDLER AND BEGIN TO INCORPORATE AI THEME INTO CAMERA-APPLOCATION
 
-// Stream handling time
+
+
+
+
+
+
+
+
+
+
+
 esp_err_t ModelController::stream_handler(httpd_req_t *req) {
+  ModelController instance;
 
-  // VARIABLES
-  camera_fb_t *fb = NULL; // image buffer
-  struct timeval _timestamp; // time stamp to control face detection
-  esp_err_t res = ESP_OK; // status code retrieval
-  size_t _jpg_buf_len = 0; // buffer length
-  uint8_t *_jpg_buf = NULL; // pointer to image
+  // Cam Variables
+  camera_fb_t *fb = NULL;
+  struct timeval _timestamp;
+  esp_err_t res = ESP_OK;
+  size_t _jpg_buf_len = 0;
+  uint8_t *_jpg_buf = NULL;
   char *part_buf[64];
 
-  // Framerate control VARIABLES
-  int64_t fr_ready = 0; 
+
+  // Stream Variables
+  #define PART_BOUNDARY "123456789000000000000987654321"
+  const char *_STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
+  const char *_STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
+  const char *_STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\nX-Timestamp: %d.%06d\r\n\r\n";
+
+#if CONFIG_ESP_FACE_DETECT_ENABLED
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+  // Timing Variables
+  bool detected = false;
+  int64_t fr_ready = 0;
   int64_t fr_recognize = 0;
   int64_t fr_encode = 0;
   int64_t fr_face = 0;
   int64_t fr_start = 0;
-  static int64_t last_frame = 0; // what is lastframe
-
+#endif
   // Face ID variables
-  bool detected = false; // face detected?
   int face_id = 0;
   size_t out_len = 0, out_width = 0, out_height = 0;
   uint8_t *out_buf = NULL;
   bool s = false;
-
-  // Initialise model as s1 (rename this in future?)
+#if TWO_STAGE
+  HumanFaceDetectMSR01 s1(0.1F, 0.5F, 10, 0.2F);
+  HumanFaceDetectMNP01 s2(0.5F, 0.3F, 5);
+#else
   HumanFaceDetectMSR01 s1(0.3F, 0.5F, 10, 0.2F);
+#endif
+#endif
 
-  // Start frame control
+  static int64_t last_frame = 0;
   if (!last_frame) {
     last_frame = esp_timer_get_time();
   }
 
-  // Set Streaming type
-  res = httpd_resp_set_type(req, _STREAM_CONTENT_TYPE); 
+  // Initialise Streaming
+  res = httpd_resp_set_type(req, _STREAM_CONTENT_TYPE);
   if (res != ESP_OK) {
     return res;
   }
 
   httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-  httpd_resp_set_hdr(req, "X-Framerate", "15"); 
+  httpd_resp_set_hdr(req, "X-Framerate", "30");
 
-// constantly survey for facedetection with models
+#if CONFIG_LED_ILLUMINATOR_ENABLED
+  isStreaming = true;
+  enable_led(true);
+#endif
+
   while (true) {
-    #if CONFIG_ESP_FACE_DETECT_ENABLED
-    // what is this!??
-    #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-        detected = false;
-    #endif
-        face_id = 0;
-    #endif
-        // capture frame as fb.
-        fb = esp_camera_fb_get();
+#if CONFIG_ESP_FACE_DETECT_ENABLED
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+    detected = false;
+#endif
+    face_id = 0;
+#endif
 
-        // Log Capture failed if this fails...
-        if (!fb) {
-          log_e("Camera capture failed");
-          res = ESP_FAIL;
-        } else { 
-
-          // Else... Stream baby.
-          _timestamp.tv_sec = fb->timestamp.tv_sec; // Init time stamping
-          _timestamp.tv_usec = fb->timestamp.tv_usec;
-    #if CONFIG_ESP_FACE_DETECT_ENABLED
-    #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-          // Pace model processing time here
-          fr_start = esp_timer_get_time();
-          fr_ready = fr_start;
-          fr_encode = fr_start;
-          fr_recognize = fr_start;
-          fr_face = fr_start;
-    #endif
-          if (!detection_enabled || fb->width > 400) {
-    #endif
-            // Conversion check -> Ensure RGB565 is selected!
-            if (fb->format != PIXFORMAT_JPEG) {
-              bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
-              esp_camera_fb_return(fb);
-              fb = NULL;
-              if (!jpeg_converted) {
-                log_e("JPEG compression failed");
-                res = ESP_FAIL;
-              }
-            } else {
-              _jpg_buf_len = fb->len;
-              _jpg_buf = fb->buf;
-            }
-    #if CONFIG_ESP_FACE_DETECT_ENABLED
+    fb = esp_camera_fb_get();
+    if (!fb) {
+      log_e("Camera capture failed");
+      res = ESP_FAIL;
+    } else {
+      _timestamp.tv_sec = fb->timestamp.tv_sec;
+      _timestamp.tv_usec = fb->timestamp.tv_usec;
+#if CONFIG_ESP_FACE_DETECT_ENABLED
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+      fr_start = esp_timer_get_time();
+      fr_ready = fr_start;
+      fr_encode = fr_start;
+      fr_recognize = fr_start;
+      fr_face = fr_start;
+#endif
+      if (fb->width > 400) {
+#endif
+        if (fb->format != PIXFORMAT_JPEG) {
+          bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
+          esp_camera_fb_return(fb);
+          fb = NULL;
+          if (!jpeg_converted) {
+            log_e("JPEG compression failed");
+            res = ESP_FAIL;
+          }
+        } else {
+          _jpg_buf_len = fb->len;
+          _jpg_buf = fb->buf;
+        }
+#if CONFIG_ESP_FACE_DETECT_ENABLED
+      } else {
+        if (fb->format == PIXFORMAT_RGB565
+        ) {
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+          fr_ready = esp_timer_get_time();
+#endif
+#if TWO_STAGE
+          std::list<dl::detect::result_t> &candidates = s1.infer((uint16_t *)fb->buf, { (int)fb->height, (int)fb->width, 3 });
+          std::list<dl::detect::result_t> &results = s2.infer((uint16_t *)fb->buf, { (int)fb->height, (int)fb->width, 3 }, candidates);
+#else
+          std::list<dl::detect::result_t> &results = s1.infer((uint16_t *)fb->buf, { (int)fb->height, (int)fb->width, 3 });
+#endif
+#if CONFIG_ESP_FACE_DETECT_ENABLED && ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+          fr_face = esp_timer_get_time();
+          fr_recognize = fr_face;
+#endif
+          if (results.size() > 0) {
+            fb_data_t rfb;
+            rfb.width = fb->width;
+            rfb.height = fb->height;
+            rfb.data = fb->buf;
+            rfb.bytes_per_pixel = 2;
+            rfb.format = FB_RGB565;
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+            detected = true;
+#endif
+            instance.DrawBoxesOnFaces(&rfb, &results, face_id);
+          }
+          s = fmt2jpg(fb->buf, fb->len, fb->width, fb->height, PIXFORMAT_RGB565, 80, &_jpg_buf, &_jpg_buf_len);
+          esp_camera_fb_return(fb);
+          fb = NULL;
+          if (!s) {
+            log_e("fmt2jpg failed");
+            res = ESP_FAIL;
+          }
+#if CONFIG_ESP_FACE_DETECT_ENABLED && ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+          fr_encode = esp_timer_get_time();
+#endif
+        } else {
+          out_len = fb->width * fb->height * 3;
+          out_width = fb->width;
+          out_height = fb->height;
+          out_buf = (uint8_t *)malloc(out_len);
+          if (!out_buf) {
+            log_e("out_buf malloc failed");
+            res = ESP_FAIL;
           } else {
-            if (fb->format == PIXFORMAT_RGB565
-    #if CONFIG_ESP_FACE_RECOGNITION_ENABLED
-                && !recognition_enabled
-    #endif
-            ) {
-    #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+            s = fmt2rgb888(fb->buf, fb->len, fb->format, out_buf);
+            esp_camera_fb_return(fb);
+            fb = NULL;
+            if (!s) {
+              free(out_buf);
+              log_e("To rgb888 failed");
+              res = ESP_FAIL;
+            } else {
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
               fr_ready = esp_timer_get_time();
-    #endif
-              // use model to get predictions based off of current frame for face detection model
-              std::list<dl::detect::result_t> &results = s1.infer((uint16_t *)fb->buf, { (int)fb->height, (int)fb->width, 3 });
-    #if CONFIG_ESP_FACE_DETECT_ENABLED && ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-              fr_face = esp_timer_get_time(); // pacing model
+#endif
+
+              fb_data_t rfb;
+              rfb.width = out_width;
+              rfb.height = out_height;
+              rfb.data = out_buf;
+              rfb.bytes_per_pixel = 3;
+              rfb.format = FB_BGR888;
+
+#if TWO_STAGE
+              std::list<dl::detect::result_t> &candidates = s1.infer((uint8_t *)out_buf, { (int)out_height, (int)out_width, 3 });
+              std::list<dl::detect::result_t> &results = s2.infer((uint8_t *)out_buf, { (int)out_height, (int)out_width, 3 }, candidates);
+#else
+              std::list<dl::detect::result_t> &results = s1.infer((uint8_t *)out_buf, { (int)out_height, (int)out_width, 3 });
+#endif
+
+#if CONFIG_ESP_FACE_DETECT_ENABLED && ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+              fr_face = esp_timer_get_time();
               fr_recognize = fr_face;
-    #endif
-              // Results = model prediction if applicable
-              if (results.size() > 0) { // if face is picked up get frane
-                fb_data_t rfb;
-                rfb.width = fb->width;
-                rfb.height = fb->height;
-                rfb.data = fb->buf;
-                rfb.bytes_per_pixel = 2;
-                rfb.format = FB_RGB565;
-    #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+#endif
+
+              if (results.size() > 0) {
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
                 detected = true;
-    #endif
-                DrawBoxesOnFaces(&rfb, &results, face_id); // Drawing boxes based on where face is.
-                // A similar function could be used to track where face is in frame and instruct servo to move in direction of where the box is.
+#endif
+#if CONFIG_ESP_FACE_RECOGNITION_ENABLED
+                  face_id = instance.RunFaceRecognition(&rfb, &results);
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+                  fr_recognize = esp_timer_get_time();
+#endif
+                
+#endif
+                instance.DrawBoxesOnFaces(&rfb, &results, face_id);
               }
-              s = fmt2jpg(fb->buf, fb->len, fb->width, fb->height, PIXFORMAT_RGB565, 80, &_jpg_buf, &_jpg_buf_len); // Converts to JPEG seems counter productive
-              esp_camera_fb_return(fb);
-              fb = NULL;
+              s = fmt2jpg(out_buf, out_len, out_width, out_height, PIXFORMAT_RGB888, 90, &_jpg_buf, &_jpg_buf_len);
+              free(out_buf);
               if (!s) {
                 log_e("fmt2jpg failed");
                 res = ESP_FAIL;
               }
-    #if CONFIG_ESP_FACE_DETECT_ENABLED && ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+#if CONFIG_ESP_FACE_DETECT_ENABLED && ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
               fr_encode = esp_timer_get_time();
-    #endif
-            } else {
-              // If image into in JPEG format do this - PIXFORMAT_JPEG ...
-              out_len = fb->width * fb->height * 3;
-              out_width = fb->width;
-              out_height = fb->height;
-              out_buf = (uint8_t *)malloc(out_len);
-
-
-              if (!out_buf) {
-                log_e("out_buf malloc failed");
-                res = ESP_FAIL;
-              } else {
-                // May be pointless...
-                s = fmt2rgb888(fb->buf, fb->len, fb->format, out_buf);
-                esp_camera_fb_return(fb);
-                fb = NULL;
-                if (!s) {
-                  free(out_buf);
-                  log_e("To rgb888 failed");
-                  res = ESP_FAIL;
-                } else {
-    #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-                  fr_ready = esp_timer_get_time();
-    #endif
-                  // This may be pointless? Should always be rgb565 no?
-                  fb_data_t rfb;
-                  rfb.width = out_width;
-                  rfb.height = out_height;
-                  rfb.data = out_buf;
-                  rfb.bytes_per_pixel = 3;
-                  rfb.format = FB_BGR888;
-
-                  // Using model to get results again
-                  std::list<dl::detect::result_t> &results = s1.infer((uint8_t *)out_buf, { (int)out_height, (int)out_width, 3 });
-
-    #if CONFIG_ESP_FACE_DETECT_ENABLED && ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-                  fr_face = esp_timer_get_time();
-                  fr_recognize = fr_face;
-    #endif
-
-                  if (results.size() > 0) {
-    #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-                    detected = true;
-    #endif
-    #if CONFIG_ESP_FACE_RECOGNITION_ENABLED
-                    // Basically format wants to be rgb888 to have FaceRecognition work
-                    if (recognition_enabled) {
-                      face_id = RunFaceRecognition(&rfb, &results);
-    #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-                      fr_recognize = esp_timer_get_time();
-    #endif
-                    }
-    #endif
-                    DrawBoxesOnFaces(&rfb, &results, face_id);
-                  }
-                  // Why constantly format to JPEG?
-                  s = fmt2jpg(out_buf, out_len, out_width, out_height, PIXFORMAT_RGB888, 90, &_jpg_buf, &_jpg_buf_len);
-                  free(out_buf);
-                  if (!s) {
-                    log_e("fmt2jpg failed");
-                    res = ESP_FAIL;
-                  }
-    #if CONFIG_ESP_FACE_DETECT_ENABLED && ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-                  fr_encode = esp_timer_get_time();
-    #endif
-                }
-              }
+#endif
             }
           }
-    #endif
+        }
+      }
+#endif
     }
-    // Status codes, stream depending....
+    // Streaming here
     if (res == ESP_OK) {
       res = httpd_resp_send_chunk(req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
     }
@@ -355,8 +415,6 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
     if (res == ESP_OK) {
       res = httpd_resp_send_chunk(req, (const char *)_jpg_buf, _jpg_buf_len);
     }
-
-    // Return Cam frame if exists after all.
     if (fb) {
       esp_camera_fb_return(fb);
       fb = NULL;
@@ -381,6 +439,9 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
 
     int64_t frame_time = fr_end - last_frame;
     frame_time /= 1000;
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+    uint32_t avg_frame_time = ra_filter_run(&ra_filter, frame_time);
+#endif
     log_i("MJPG: %uB %ums (%.1ffps), AVG: %ums (%.1ffps)"
 #if CONFIG_ESP_FACE_DETECT_ENABLED
           ", %u+%u+%u+%u=%u %s%d"
@@ -388,6 +449,7 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
           ,
           (uint32_t)(_jpg_buf_len),
           (uint32_t)frame_time, 1000.0 / (uint32_t)frame_time,
+          avg_frame_time, 1000.0 / avg_frame_time
 #if CONFIG_ESP_FACE_DETECT_ENABLED
           ,
           (uint32_t)ready_time, (uint32_t)face_time, (uint32_t)recognize_time, (uint32_t)encode_time, (uint32_t)process_time,
@@ -395,11 +457,46 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
 #endif
     );
   }
+
+#if CONFIG_LED_ILLUMINATOR_ENABLED
+  isStreaming = false;
+  enable_led(false);
+#endif
+
   return res;
 }
 
+static SmoothingFilter smoothingFilter;
 
-// temp
+void ModelController::startCameraApp() {
+    httpd_config_t config = HTTPD_DEFAULT_CONFIG(); //  A structure containing configuration parameters for the HTTP server, such as server task priority, stack size, and port.
+    config.max_uri_handlers = 8; // can handle 8 uri paths like /stream, /jpeg
+    httpd_handle_t stream_httpd = NULL; 
+
+     // Register the HTML handler
+    httpd_uri_t html_uri = {
+        .uri = "/",
+        .method = HTTP_GET,
+        .handler = html_handler,
+        .user_ctx = NULL
+    };
+
+    // define general stream handler
+    httpd_uri_t stream_uri = {
+        .uri = "/stream",
+        .method = HTTP_GET,
+        .handler = stream_handler,
+        .user_ctx = NULL
+    };
+
+    SmoothingFilterInit(&smoothingFilter, 20);
+
+    if (httpd_start(&stream_httpd, &config) == ESP_OK) {
+        httpd_register_uri_handler(stream_httpd, &html_uri);
+        httpd_register_uri_handler(stream_httpd, &stream_uri);
+    }
+}
+
 
 
 

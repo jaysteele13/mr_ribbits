@@ -93,7 +93,7 @@ void CameraServerController::Init(void) {
   WiFi.softAP(ssid, password, 13);
 
   // Start web and camera app / operations
-  app.startCameraApp();
+  modelController.startCameraApp();
 
   Serial.println("Camera Ready!");
 

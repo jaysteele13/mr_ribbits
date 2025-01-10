@@ -14,6 +14,7 @@ public:
 private:
   // instance of web application
   Camera_Application app;
+  ModelController modelController;
 
   // wifi config
   const char *ssid = "mr_ribits_eyes";
