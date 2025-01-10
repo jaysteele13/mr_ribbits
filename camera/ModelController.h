@@ -31,6 +31,17 @@ class ModelController
 
 public:
 
+  // --------- Variables -----------
+  FaceRecognition112V1S8 recognizer; // define library which uses model, to implement my own woould need ot understand how this one works
+
+  // -------- Functions ------------
+  void DrawBoxesOnFaces(fb_data_t *fb, std::list<dl::detect::result_t> *results, int face_id);
+  int RunFaceRecognition(fb_data_t *fb, std::list<dl::detect::result_t> *results);
+
+  // Temp
+  esp_err_t stream_handler(httpd_req_t *req);
+
+
 private:
 // need
 /*
@@ -56,7 +67,9 @@ learn with streaming  function how to incorporate model
   // ---------- Variable ---------------
 
   int8_t detection_enabled = 0;
+  int8_t is_enrolling = 0;
   SmoothingFilter smoothingFilter;
+  bool recognition_enabled = true;
 
   // ------ Variable end --------------
 
@@ -80,6 +93,13 @@ learn with streaming  function how to incorporate model
   #define FACE_COLOR_YELLOW (FACE_COLOR_RED | FACE_COLOR_GREEN)
   #define FACE_COLOR_CYAN (FACE_COLOR_BLUE | FACE_COLOR_GREEN)
   #define FACE_COLOR_PURPLE (FACE_COLOR_BLUE | FACE_COLOR_RED)
+
+  // Streaming Counterpart
+  #define PART_BOUNDARY "123456789000000000000987654321"
+  const char *_STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
+  const char *_STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
+  const char *_STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\nX-Timestamp: %d.%06d\r\n\r\n";
+  
 
 };
 
