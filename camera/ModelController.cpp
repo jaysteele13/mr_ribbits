@@ -186,7 +186,7 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
   }
 
   httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-  httpd_resp_set_hdr(req, "X-Framerate", "30"); 
+  httpd_resp_set_hdr(req, "X-Framerate", "15"); 
 
 // constantly survey for facedetection with models
   while (true) {
@@ -397,4 +397,9 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
   }
   return res;
 }
+
+
+// temp
+
+
 

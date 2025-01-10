@@ -19,12 +19,12 @@ esp_err_t Camera_Application::html_handler(httpd_req_t *req) {
             font-family: "Roboto", sans-serif;
         }
         h1 {
-            font-size: 2rem;
+            font-size: 6rem;
             color: #6b705c; /* Pastel green */
         }
         #stream {
-            max-width: 90%;
-            height: auto;
+            width: 800px;
+            height: 800px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -138,7 +138,7 @@ void Camera_Application::startCameraApp() {
     httpd_uri_t stream_uri = {
         .uri = "/stream",
         .method = HTTP_GET,
-        .handler = stream_handler,
+        .handler = ModelController::static_stream_handler,
         .user_ctx = NULL
     };
 

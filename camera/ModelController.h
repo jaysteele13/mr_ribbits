@@ -37,9 +37,17 @@ public:
   // -------- Functions ------------
   void DrawBoxesOnFaces(fb_data_t *fb, std::list<dl::detect::result_t> *results, int face_id);
   int RunFaceRecognition(fb_data_t *fb, std::list<dl::detect::result_t> *results);
+  void startCameraApp();
 
   // Temp
   esp_err_t stream_handler(httpd_req_t *req);
+
+  // A static wrapper function, required for the HTTP server to use it as a handler
+  static esp_err_t static_stream_handler(httpd_req_t *req) {
+        // Retrieve the instance of ModelController using user_ctx
+        ModelController* controller = reinterpret_cast<ModelController*>(req->user_ctx);
+        return controller->stream_handler(req);  // Call the non-static method on the instance
+  }
 
 
 private:
