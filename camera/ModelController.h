@@ -45,6 +45,7 @@ public:
   int RunFaceRecognition(fb_data_t *fb, std::list<dl::detect::result_t> *results);
   void startCameraApp();
   static esp_err_t html_handler(httpd_req_t *req);
+  static esp_err_t toggle_handler(httpd_req_t *req);
 
   // Temp
   static esp_err_t stream_handler(httpd_req_t *req);
@@ -74,7 +75,7 @@ learn with streaming  function how to incorporate model
   // ---------- Variable ---------------
 
   int8_t detection_enabled = 0;
-  int8_t is_enrolling = 0;
+  bool is_enrolling = 0;
   SmoothingFilter smoothingFilter;
   bool recognition_enabled = true;
 
@@ -83,8 +84,8 @@ learn with streaming  function how to incorporate model
 
 
   // Face Define Detection variables
-  #define CONFIG_ESP_FACE_RECOGNITION_ENABLED 1
-  #define CONFIG_ESP_FACE_DETECT_ENABLED 1
+  #define CONFIG_ESP_FACE_RECOGNITION_ENABLED 0 // what kind of person
+  #define CONFIG_ESP_FACE_DETECT_ENABLED 1 // general face
 
   // Face Id Config
   #define QUANT_TYPE 0  //if set to 1 => very large firmware, very slow, reboots when streaming...

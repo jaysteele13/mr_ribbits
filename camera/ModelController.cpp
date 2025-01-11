@@ -136,55 +136,97 @@ int ModelController::RunFaceRecognition(fb_data_t *fb, std::list<dl::detect::res
   if (recognize.id >= 0) {
     printToFrame(fb, FACE_COLOR_GREEN, "Person [%u]: %.2f", recognize.id, recognize.similarity);
   } else {
-    printToFrameHelper(fb, FACE_COLOR_RED, "Scary Person Alert!");
+    printToFrameHelper(fb, FACE_COLOR_RED, "Glimble Alert!");
   }
   return recognize.id;
 }
 
 // HTML Handler
 esp_err_t ModelController::html_handler(httpd_req_t *req) {
-    // -------- Manage HTML Page -> Would rather have in sperate file, this is good enough ---------
-    const char* html = R"rawliteral(<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {
-            background-color: #fdf1e6; /* Pastel peach */
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            font-family: "Roboto", sans-serif;
-        }
-        h1 {
-            font-size: 6rem;
-            color: #6b705c; /* Pastel green */
-        }
-        #stream {
-            width: 800px;
-            height: 800px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        #ribit {
-            width: 40px;
-            border-radius: 2px;
-        }
-    </style>
-    <title>Mr Ribits Eyeballs</title>
-</head>
-<body>
-    <img id="ribit" src="data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALBAMAAACNJ7BwAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAC1QTFRFLU9xlJ6lk5aTkpN4O1t8AAAAucbQIUt1hYVeTm6PCDhokJGRd4eWubu7kqW4VMUejQAAAA90Uk5Tz/////sADff/5/9a9/+75ZA/MgAAAHZJREFUeJxjeFk5pfzMmXJP93kM5bJ33ZWUVt69uIChxqJD0mXKxI6mAwwTm5UNy92FjSwkGQ4ZKRuuWiWspCHJMKlJ2WZVFVBUgKFGo1m9vNzRotGBweWQjpeLyxIlnUqGlwxQMI8hDQh27waRDKFAsHs3iAQAfHkpSLCBfwsAAAAASUVORK5CYII=" alt="Lil man balls">
-    <h1 class="text-monospace font-weight-light font-italic">Ribits View</h1>
-    <img id="stream" src="/stream" alt="Live Stream from ESP32 Camera" />
-</body>
-</html>)rawliteral";
+    // HTML with a toggle button
+    const char* html = R"rawliteral(
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {
+                background-color: #fdf1e6; /* Pastel peach */
+                color: #333;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+                font-family: "Roboto", sans-serif;
+            }
+            h1 {
+                font-size: 6rem;
+                color: #6b705c; /* Pastel green */
+            }
+            #stream {
+                width: 800px;
+                height: 800px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            #ribit {
+                width: 40px;
+                border-radius: 2px;
+            }
+            #toggleButton {
+                margin-top: 20px;
+                padding: 10px 20px;
+                background-color: #6b705c;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 2rem;
+                width: 3rem;
+                height: 3rem;
+            }
+        </style>
+        <title>Mr Ribits Eyeballs</title>
+    </head>
+    <body>
+        <img id="ribit" src="data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALBAMAAACNJ7BwAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAC1QTFRFLU9xlJ6lk5aTkpN4O1t8AAAAucbQIUt1hYVeTm6PCDhokJGRd4eWubu7kqW4VMUejQAAAA90Uk5Tz/////sADff/5/9a9/+75ZA/MgAAAHZJREFUeJxjeFk5pfzMmXJP93kM5bJ33ZWUVt69uIChxqJD0mXKxI6mAwwTm5UNy92FjSwkGQ4ZKRuuWiWspCHJMKlJ2WZVFVBUgKFGo1m9vNzRotGBweWQjpeLyxIlnUqGlwxQMI8hDQh27waRDKFAsHs3iAQAfHkpSLCBfwsAAAAASUVORK5CYII=" alt="Lil man balls">
+        <h1 class="text-monospace font-weight-light font-italic">Ribits View</h1>
+        <img id="stream" src="/stream" alt="Live Stream from ESP32 Camera" />
+        <button id="toggleButton">Enroll Face</button>
+
+        <script>
+            const button = document.getElementById('toggleButton');
+
+            button.addEventListener('click', () => {
+                fetch('/toggle', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Current state:', data.state);
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        </script>
+    </body>
+    </html>)rawliteral";
 
     httpd_resp_set_type(req, "text/html");
     return httpd_resp_send(req, html, strlen(html));
+}
+
+
+esp_err_t ModelController::toggle_handler(httpd_req_t *req) {
+    ModelController instance;
+    bool enroll = instance.is_enrolling;
+    enroll = !enroll;
+
+    char response[32];
+    snprintf(response, sizeof(response), "{\"state\": %s}", true ? "true" : "false");
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_send(req, response, strlen(response));
+
+    return ESP_OK;
 }
 
 
@@ -255,10 +297,6 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
   httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
   httpd_resp_set_hdr(req, "X-Framerate", "30");
 
-#if CONFIG_LED_ILLUMINATOR_ENABLED
-  isStreaming = true;
-  enable_led(true);
-#endif
 
   while (true) {
 #if CONFIG_ESP_FACE_DETECT_ENABLED
@@ -267,12 +305,13 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
 #endif
     face_id = 0;
 #endif
-
+    // Get Frame Buffer
     fb = esp_camera_fb_get();
     if (!fb) {
       log_e("Camera capture failed");
       res = ESP_FAIL;
     } else {
+      // Time stamps to track logs
       _timestamp.tv_sec = fb->timestamp.tv_sec;
       _timestamp.tv_usec = fb->timestamp.tv_usec;
 #if CONFIG_ESP_FACE_DETECT_ENABLED
@@ -283,7 +322,7 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
       fr_recognize = fr_start;
       fr_face = fr_start;
 #endif
-      if (fb->width > 400) {
+      if (fb->width > 400) { // Checking how big screen is
 #endif
         if (fb->format != PIXFORMAT_JPEG) {
           bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
@@ -299,6 +338,7 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
         }
 #if CONFIG_ESP_FACE_DETECT_ENABLED
       } else {
+        // IF RGB565!
         if (fb->format == PIXFORMAT_RGB565
         ) {
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
@@ -324,8 +364,17 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
             detected = true;
 #endif
+            #if CONFIG_ESP_FACE_RECOGNITION_ENABLED
+                  face_id = instance.RunFaceRecognition(&rfb, &results);
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+                  fr_recognize = esp_timer_get_time();
+#endif
+                
+#endif
             instance.DrawBoxesOnFaces(&rfb, &results, face_id);
           }
+
+          // Why do this code
           s = fmt2jpg(fb->buf, fb->len, fb->width, fb->height, PIXFORMAT_RGB565, 80, &_jpg_buf, &_jpg_buf_len);
           esp_camera_fb_return(fb);
           fb = NULL;
@@ -458,11 +507,6 @@ esp_err_t ModelController::stream_handler(httpd_req_t *req) {
     );
   }
 
-#if CONFIG_LED_ILLUMINATOR_ENABLED
-  isStreaming = false;
-  enable_led(false);
-#endif
-
   return res;
 }
 
@@ -486,6 +530,13 @@ void ModelController::startCameraApp() {
         .uri = "/stream",
         .method = HTTP_GET,
         .handler = stream_handler,
+        .user_ctx = NULL
+    };
+
+    httpd_uri_t toggleuri = {
+        .uri = "/toggle",
+        .method = HTTP_GET,
+        .handler = toggle_handler,
         .user_ctx = NULL
     };
 
