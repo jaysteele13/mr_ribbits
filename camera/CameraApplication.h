@@ -10,6 +10,7 @@
 #include "sdkconfig.h"
 #include "camera_index.h"
 #include <Arduino.h>
+#include "ModelController.h"
 
 // #if defined(ARDUINO_ARCH_ESP32) && defined(CONFIG_ARDUHAL_ESP_LOG)
 // #include "esp32-hal-log.h" // may need when communicating with other arduino.
@@ -21,6 +22,8 @@ public:
 private:
   static esp_err_t stream_handler(httpd_req_t *req); // Function declaration
   static esp_err_t html_handler(httpd_req_t *req); // Function declaration
+
+  ModelController modelController;
 };
 
 #endif 

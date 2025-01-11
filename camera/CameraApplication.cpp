@@ -19,12 +19,12 @@ esp_err_t Camera_Application::html_handler(httpd_req_t *req) {
             font-family: "Roboto", sans-serif;
         }
         h1 {
-            font-size: 2rem;
+            font-size: 6rem;
             color: #6b705c; /* Pastel green */
         }
         #stream {
-            max-width: 90%;
-            height: auto;
+            width: 800px;
+            height: 800px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -121,6 +121,8 @@ esp_err_t Camera_Application::stream_handler(httpd_req_t *req) {
     return res;
 }
 
+static SmoothingFilter smoothingFilter;
+
 void Camera_Application::startCameraApp() {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG(); //  A structure containing configuration parameters for the HTTP server, such as server task priority, stack size, and port.
     config.max_uri_handlers = 8; // can handle 8 uri paths like /stream, /jpeg
@@ -141,6 +143,8 @@ void Camera_Application::startCameraApp() {
         .handler = stream_handler,
         .user_ctx = NULL
     };
+
+    modelController.SmoothingFilterInit(&smoothingFilter, 20);
 
     if (httpd_start(&stream_httpd, &config) == ESP_OK) {
         httpd_register_uri_handler(stream_httpd, &html_uri);
