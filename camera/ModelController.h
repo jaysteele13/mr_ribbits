@@ -49,6 +49,7 @@ public:
 
   // Temp
   static esp_err_t stream_handler(httpd_req_t *req);
+  uint8_t GetDirection(int x, int w, fb_data_t *fb);
 
 private:
 // need

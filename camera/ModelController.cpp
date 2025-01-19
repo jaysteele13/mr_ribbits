@@ -1,3 +1,5 @@
+#include "HWCDC.h"
+#include <sys/_stdint.h>
 
 #include "ModelController.h"
 
@@ -68,6 +70,35 @@ esp_err_t ModelController::HeaderAvailableStatus(httpd_req_t *req, char **obuf) 
   return ESP_FAIL;
 }
 
+uint8_t ModelController::GetDirection(int x, int w, fb_data_t *fb) {
+    // Get screen boundaries
+    int screenWidth = fb->width;
+    
+    // Calculate the center of the detected object (e.g., head)
+    float centerX = x + w / 2.0;
+
+    // Map the center position to an angle between 0 and 180
+    float angle = (centerX / screenWidth) * 180.0;
+
+    // Clamp the angle to ensure it's within the valid range for uint8_t
+    if (angle < 0) angle = 0;
+    if (angle > 180) angle = 180;
+
+    // Debugging output
+    // Serial.println("---------------------");
+    // Serial.print("x: ");
+    // Serial.println(x);
+    // Serial.print("w: ");
+    // Serial.println(w);
+    // Serial.print("Screen width: ");
+    // Serial.println(screenWidth);
+    // Serial.print("CenterX: ");
+    // Serial.println(centerX);
+    // Serial.print("Mapped angle: ");
+    // Serial.println(angle);
+
+    return static_cast<uint8_t>(angle);
+}
 
 
 // Function to draw boxes on faces
@@ -101,6 +132,13 @@ void ModelController::DrawBoxesOnFaces(fb_data_t *fb, std::list<dl::detect::resu
     if ((y + h) > fb->height) {
       h = fb->height - y;
     }
+
+    // Map Directions
+    uint8_t direction = GetDirection(x, w, fb);
+    Serial.print("Mapped angle: ");
+    Serial.println(direction);
+    // map this direction back every second, based on if a face is recognised send a direction out to the other
+    // microcontroller. If face isn't detected actively don't initiate send data to uno sequence
 
     // built in function to draw line into frame where face may be detected.
     fb_gfx_drawFastHLine(fb, x, y, w, color);
@@ -192,22 +230,6 @@ esp_err_t ModelController::html_handler(httpd_req_t *req) {
         <img id="ribit" src="data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALBAMAAACNJ7BwAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAC1QTFRFLU9xlJ6lk5aTkpN4O1t8AAAAucbQIUt1hYVeTm6PCDhokJGRd4eWubu7kqW4VMUejQAAAA90Uk5Tz/////sADff/5/9a9/+75ZA/MgAAAHZJREFUeJxjeFk5pfzMmXJP93kM5bJ33ZWUVt69uIChxqJD0mXKxI6mAwwTm5UNy92FjSwkGQ4ZKRuuWiWspCHJMKlJ2WZVFVBUgKFGo1m9vNzRotGBweWQjpeLyxIlnUqGlwxQMI8hDQh27waRDKFAsHs3iAQAfHkpSLCBfwsAAAAASUVORK5CYII=" alt="Lil man balls">
         <h1 class="text-monospace font-weight-light font-italic">Ribits View</h1>
         <img id="stream" src="/stream" alt="Live Stream from ESP32 Camera" />
-        <button id="toggleButton">Enroll Face</button>
-
-        <script>
-            const button = document.getElementById('toggleButton');
-
-            button.addEventListener('click', () => {
-                fetch('/toggle', {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Current state:', data.state);
-                })
-                .catch(error => console.error('Error:', error));
-            });
-        </script>
     </body>
     </html>)rawliteral";
 
