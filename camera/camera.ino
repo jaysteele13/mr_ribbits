@@ -45,6 +45,7 @@ void setup()
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
 
+
   // need this to get local files!
   // To send files go cmd shift p and type "Upload little FS/PICO..."
   // if (!LittleFS.begin()) {
@@ -69,5 +70,15 @@ void setup()
 }
 void loop()
 {
+  // may need to have this in model controller
+  if (Serial1.available()) {
+        String data = Serial1.readString();
+        Serial.println("Received from Arduino Uno: " + data);
+    }
+
+    if (Serial.available()) {
+        String data = Serial.readString();
+        Serial1.println(data); // Send data to Arduino Uno
+    }
   // empty
 }
