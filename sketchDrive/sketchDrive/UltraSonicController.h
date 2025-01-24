@@ -2,7 +2,6 @@
 #define ULTRASONICCONTROLLER_H
 
 #include <Arduino.h>
-#include <avr/wdt.h>
 
 class UltraSonicController 
 {
