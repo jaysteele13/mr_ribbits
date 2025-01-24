@@ -1,8 +1,14 @@
-# mr_ribbits
+# Mr Ribbits
 
-### hi there 💅
+### Summary
 
-![mr_ribbits](https://github.com/user-attachments/assets/10824c43-7cc8-4ffc-9bee-ef8e513587c0)
+Mr. Ribbits is an autonomous robot designed to adapt its movement based on its environment and can be configured to track human faces.
+
+The robot is built using an Arduino Uno and an ESP32S3, paired with servos and an expansion board for motor control. It is powered by a rechargeable lithium battery and also features a passive buzzer for additional functionality.
+
+### Demo
+
+
 
 
 ### What Mr Ribbits can do!
