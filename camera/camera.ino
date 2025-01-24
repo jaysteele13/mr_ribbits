@@ -1,4 +1,5 @@
 #include "CameraServerController.h"
+// #include "ModelController.h"
 #include <WiFi.h>
 #include "esp_camera.h"
 #include "LittleFS.h"
@@ -20,6 +21,7 @@ WiFiServer server(100);
 #define TXD2 40
 
 CameraServerController cameraServerController;
+// ModelController modelController;
 
 // NOTE: esp32 espressiv board must be at v.2.0.14 also here is how the tools should be configured:
 //            USB CDC On Boot ---> Enabled
@@ -43,7 +45,7 @@ void setup()
 {
   // Initialise Serials
   Serial.begin(115200);
-  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+  // Serial1.begin(9600, SERIAL_8N1, RXD2, TXD2);
 
 
   // need this to get local files!
@@ -71,14 +73,16 @@ void setup()
 void loop()
 {
   // may need to have this in model controller
-  if (Serial1.available()) {
-        String data = Serial1.readString();
-        Serial.println("Received from Arduino Uno: " + data);
-    }
+  // if (Serial1.available()) {
+  //       String data = Serial1.readString();
+  //       Serial.println("Received from Arduino Uno: " + data);
+  //   }
 
-    if (Serial.available()) {
-        String data = Serial.readString();
-        Serial1.println(data); // Send data to Arduino Uno
-    }
+    // if (Serial.available()) {
+    //     String data = Serial.readString();
+    //     // use the camera server
+    //     modelController.GetDirection() // prints direction of face back to servo
+    //     Serial1.println("hi uno"); // Send data to Arduino Uno
+    // }
   // empty
 }
