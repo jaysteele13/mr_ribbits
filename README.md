@@ -8,8 +8,7 @@ The robot is built using an Arduino Uno and an ESP32S3, paired with servos and a
 
 ### Demo
 
-
-
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/QLUIuGvhEVs/0.jpg)](http://www.youtube.com/watch?v=QLUIuGvhEVs "Demo for Mr Ribits")
 
 ### What Mr Ribbits can do!
 - Basic AutoPilot -> Autonomous Driving
