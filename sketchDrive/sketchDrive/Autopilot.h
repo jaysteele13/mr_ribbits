@@ -2,7 +2,6 @@
 #define AUTOPILOT_H
 
 #include <Arduino.h>
-#include <avr/wdt.h>
 #include "driveMotor.h"
 #include "UltraSonicController.h"
 #include "BuzzerController.h"
