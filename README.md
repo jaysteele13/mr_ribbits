@@ -27,4 +27,4 @@ The robot is built using an Arduino Uno and an ESP32S3, paired with servos and a
 
 ### Is there lost potential?
 1. IS set up to **detect acceleration, current rotation and temperature**, however have disabled this due to the memory cost and lack of innovative ideas to explore these features.
-2. By streaming video and a JavaScript-based HTML page over an isolated WiFi connection, it becomes possible to control Mr. Ribbits directly from a computer.
+2. By **streaming video and a JavaScript-based HTML** page over an isolated WiFi connection, it could become possible to **control Mr. Ribbits directly from a computer**.
